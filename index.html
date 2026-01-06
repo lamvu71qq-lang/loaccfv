@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AccMaster Pro</title>
-    <link rel="icon" href="https://raw.githubusercontent.com/phosphor-icons/core/main/assets/regular/shield-star.svg" type="image/svg+xml">
+    <title>BearAcc Pro</title>
+    <!-- Teddy Bear Icon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧸</text></svg>">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -71,6 +72,7 @@
                         'slide-in': 'slideIn 0.4s ease-out forwards',
                         'fade-in': 'fadeIn 0.2s ease-out forwards',
                         'scale-in': 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
                     },
                     keyframes: {
                         slideIn: {
@@ -84,6 +86,10 @@
                         scaleIn: {
                             'from': { transform: 'scale(0.9)', opacity: '0' },
                             'to': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        popIn: {
+                            'from': { opacity: '0', transform: 'translate(-50%, -40%) scale(0.9)' },
+                            'to': { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' }
                         }
                     }
                 }
@@ -105,30 +111,30 @@
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl border bg-slate-900 border-slate-800 animate-scale-in">
             <div class="flex flex-col items-center mb-6">
-                <div class="bg-indigo-600 p-3 rounded-xl mb-4 shadow-lg shadow-indigo-500/30">
-                    <i class="ph ph-shield-star text-white text-3xl"></i>
+                <!-- Teddy Bear Icon -->
+                <div class="bg-amber-600 p-4 rounded-full mb-4 shadow-lg shadow-amber-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M224,96a56.06,56.06,0,0,0-56-56,8,8,0,0,0-8,8,40,40,0,0,1-80,0,8,8,0,0,0-8-8,56.06,56.06,0,0,0-56,56,8,8,0,0,0,8,8,40,40,0,0,1,33.84,18.78,56.12,56.12,0,0,0,84.32,0A40,40,0,0,1,176,104,8,8,0,0,0,224,96ZM48,96a40,40,0,0,1,28.62-38.34A56,56,0,0,0,32,96c0,13.23,7.26,24.83,18.09,31.72A40.16,40.16,0,0,1,48,96Zm174.12,32.3A56.1,56.1,0,0,0,186,171.18c4.37,8.22,6.58,16.59,6,24.23-.74,9.65-6.69,17-15.65,19.33a54.54,54.54,0,0,1-13.67,1.72c-9.1,0-19.36-2.58-29.07-7.29a8,8,0,0,0-7.22,0c-9.71,4.71-20,7.29-29.07,7.29a54.54,54.54,0,0,1-13.67-1.72c-9-2.31-14.91-9.68-15.65-19.33-.55-7.64,1.66-16,6-24.23a56,56,0,0,0,0-85.36c.7-1.32,1.44-2.61,2.22-3.86a56,56,0,0,0,145.87,49.22ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path>
+                    </svg>
                 </div>
-                <h1 class="text-2xl font-bold">AccMaster Pro</h1>
+                <h1 class="text-2xl font-bold text-amber-500">BearAcc Pro</h1>
                 <p class="text-slate-400 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Firebase Live Sync</p>
             </div>
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase mb-1.5 opacity-70">Username</label>
-                    <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-indigo-500 transition-colors placeholder-slate-500" placeholder="Nhập tên đăng nhập" autofocus>
+                    <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="Nhập tên đăng nhập" autofocus>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase mb-1.5 opacity-70">Password</label>
-                    <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-indigo-500 transition-colors placeholder-slate-500" placeholder="••••••">
+                    <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="••••••">
                 </div>
                 <div id="login-error" class="hidden p-3 rounded-lg bg-rose-500/10 text-rose-500 text-sm font-bold flex items-center gap-2">
                     <i class="ph ph-warning-circle"></i> <span>Sai tên đăng nhập hoặc mật khẩu!</span>
                 </div>
-                <div id="loading-msg" class="hidden text-center text-indigo-400 font-bold text-sm animate-pulse">Đang tải dữ liệu từ server...</div>
-                <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/30 active:scale-95">Đăng Nhập</button>
+                <div id="loading-msg" class="hidden text-center text-amber-400 font-bold text-sm animate-pulse">Đang tải dữ liệu từ server...</div>
+                <button type="submit" id="btn-login" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/30 active:scale-95">Đăng Nhập</button>
             </form>
-            <div class="mt-6 text-center text-xs opacity-50">
-                <p>Default: Admin / 1111</p>
-            </div>
         </div>
     </div>
 
@@ -137,11 +143,13 @@
         <header class="backdrop-blur-md sticky top-0 z-50 border-b shadow-sm transition-colors duration-300 bg-slate-900/80 border-slate-800">
             <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="bg-indigo-600 p-2 rounded-lg text-white shadow-lg shadow-indigo-500/30">
-                        <i class="ph ph-shield-star text-2xl"></i>
+                    <div class="bg-amber-600 p-1.5 rounded-lg text-white shadow-lg shadow-amber-500/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M224,96a56.06,56.06,0,0,0-56-56,8,8,0,0,0-8,8,40,40,0,0,1-80,0,8,8,0,0,0-8-8,56.06,56.06,0,0,0-56,56,8,8,0,0,0,8,8,40,40,0,0,1,33.84,18.78,56.12,56.12,0,0,0,84.32,0A40,40,0,0,1,176,104,8,8,0,0,0,224,96ZM48,96a40,40,0,0,1,28.62-38.34A56,56,0,0,0,32,96c0,13.23,7.26,24.83,18.09,31.72A40.16,40.16,0,0,1,48,96Zm174.12,32.3A56.1,56.1,0,0,0,186,171.18c4.37,8.22,6.58,16.59,6,24.23-.74,9.65-6.69,17-15.65,19.33a54.54,54.54,0,0,1-13.67,1.72c-9.1,0-19.36-2.58-29.07-7.29a8,8,0,0,0-7.22,0c-9.71,4.71-20,7.29-29.07,7.29a54.54,54.54,0,0,1-13.67-1.72c-9-2.31-14.91-9.68-15.65-19.33-.55-7.64,1.66-16,6-24.23a56,56,0,0,0,0-85.36c.7-1.32,1.44-2.61,2.22-3.86a56,56,0,0,0,145.87,49.22ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path>
+                        </svg>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold leading-none">AccMaster Pro</h1>
+                        <h1 class="text-xl font-bold leading-none text-amber-500">BearAcc Pro</h1>
                         <div class="flex items-center gap-2 mt-1">
                             <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase bg-rose-500 text-white">ADMIN</span>
                             <span id="user-name-display" class="text-xs font-medium text-slate-400">User</span>
@@ -225,12 +233,12 @@
                             </div>
                             <form id="add-acc-form" onsubmit="handleAddAccount(event)" class="space-y-4 relative z-10">
                                 <div class="space-y-3">
-                                    <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Email / Username">
-                                    <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Password">
+                                    <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Email / Username">
+                                    <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Password">
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <input type="number" id="input-price" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Giá (VNĐ)">
-                                    <input type="text" id="input-note" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Ghi chú">
+                                    <input type="number" id="input-price" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Giá (VNĐ)">
+                                    <input type="text" id="input-note" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Ghi chú">
                                 </div>
                                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95 mt-2 flex justify-center items-center gap-2">
                                     <i class="ph ph-plus-circle text-lg"></i> Thêm Acc
@@ -250,19 +258,30 @@
                 <!-- MAIN LIST -->
                 <div class="lg:col-span-8 flex flex-col h-[800px] rounded-2xl shadow-lg overflow-hidden border bg-slate-900 border-slate-800">
                     <div id="admin-list-container" class="flex flex-col h-full">
-                        <div class="p-5 border-b flex flex-col sm:flex-row justify-between items-center gap-4 z-10 border-slate-800 bg-slate-900">
-                            <div class="flex items-center gap-2">
-                                <h2 class="font-bold text-lg">Kho Acc</h2>
-                                <span id="list-count-badge" class="px-2 py-0.5 rounded-md text-xs font-bold bg-slate-800 text-slate-400">0</span>
+                        <!-- HEADER AREA WITH SEARCH -->
+                        <div class="p-4 border-b border-slate-800 bg-slate-900 space-y-3 z-10 sticky top-0">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <div class="flex items-center gap-2">
+                                    <h2 class="font-bold text-lg">Kho Acc</h2>
+                                    <span id="list-count-badge" class="px-2 py-0.5 rounded-md text-xs font-bold bg-slate-800 text-slate-400">0</span>
+                                </div>
+                                <!-- SEARCH BAR -->
+                                <div class="relative w-full sm:w-64 group">
+                                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors"></i>
+                                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Tìm username, note..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:border-amber-500 outline-none transition-all placeholder-slate-600 focus:bg-slate-950">
+                                </div>
                             </div>
-                            <div class="flex p-1 rounded-lg overflow-x-auto max-w-full bg-slate-800" id="filter-buttons">
-                                <button onclick="setFilter('all')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize bg-slate-700 text-indigo-400 shadow" data-filter="all">Tất cả</button>
+                            
+                            <!-- FILTERS -->
+                            <div class="flex p-1 rounded-lg overflow-x-auto max-w-full bg-slate-800 scrollbar-hide" id="filter-buttons">
+                                <button onclick="setFilter('all')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize bg-slate-700 text-amber-500 shadow" data-filter="all">Tất cả</button>
                                 <button onclick="setFilter('pending')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="pending">Chờ</button>
                                 <button onclick="setFilter('farming')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="farming">Đang cày</button>
                                 <button onclick="setFilter('completed')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="completed">Xong</button>
                                 <button onclick="setFilter('sold')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="sold">Đã bán</button>
                             </div>
                         </div>
+
                         <div id="accounts-list" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-950/50"></div>
                     </div>
                     <div id="viewer-list-placeholder" class="hidden h-full flex flex-col items-center justify-center text-slate-500">
@@ -286,10 +305,10 @@
         <div id="large-modal-content" class="w-full sm:max-w-2xl h-[80vh] sm:h-[600px] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl border animate-slide-in bg-slate-900 border-slate-700 text-white relative"></div>
     </div>
 
-    <!-- TOAST -->
-    <div id="toast" class="fixed top-24 right-5 z-[100] px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3 font-medium text-white transform translate-x-full transition-transform duration-300">
-        <i id="toast-icon" class="ph ph-check-circle text-xl"></i>
-        <span id="toast-message">Notification</span>
+    <!-- CENTERED TOAST (NOTIFICATION) -->
+    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-6 py-4 rounded-xl shadow-2xl flex flex-col items-center justify-center gap-2 font-medium text-white transition-all duration-300 opacity-0 scale-90 invisible min-w-[200px] text-center">
+        <i id="toast-icon" class="ph ph-check-circle text-4xl mb-1"></i>
+        <span id="toast-message" class="text-lg">Notification</span>
     </div>
 
     <script>
@@ -300,6 +319,7 @@
             accounts: [], // Sync from Firebase
             history: [], // Sync from Firebase
             filter: 'all',
+            searchQuery: '',
             isDark: true,
             sellQuantity: 1
         };
@@ -543,28 +563,49 @@
             `;
         }
 
-        // --- ACCOUNT LIST ---
+        // --- ACCOUNT LIST & SEARCH ---
         function setFilter(f) {
             state.filter = f;
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 const isActive = btn.dataset.filter === f;
-                btn.className = `filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize transition-all whitespace-nowrap ${isActive ? 'bg-slate-700 text-indigo-400 shadow' : 'text-slate-400 hover:text-slate-200'}`;
+                btn.className = `filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize transition-all whitespace-nowrap ${isActive ? 'bg-slate-700 text-amber-500 shadow' : 'text-slate-400 hover:text-slate-200'}`;
             });
+            renderAccounts();
+        }
+
+        function handleSearch(val) {
+            state.searchQuery = val.trim().toLowerCase();
             renderAccounts();
         }
 
         function renderAccounts() {
             const now = Date.now();
+            
+            // FILTER & SEARCH LOGIC
             const filtered = state.accounts.filter(acc => {
-                if (state.filter === 'all') return true;
-                return getAccStatus(acc) === state.filter;
+                // 1. Status Filter
+                let statusMatch = true;
+                if (state.filter !== 'all') {
+                    statusMatch = getAccStatus(acc) === state.filter;
+                }
+
+                // 2. Search Filter
+                let searchMatch = true;
+                if (state.searchQuery) {
+                    const u = acc.username ? acc.username.toLowerCase() : '';
+                    const n = acc.note ? acc.note.toLowerCase() : '';
+                    searchMatch = u.includes(state.searchQuery) || n.includes(state.searchQuery);
+                }
+
+                return statusMatch && searchMatch;
             });
 
             document.getElementById('list-count-badge').textContent = filtered.length;
             const listEl = document.getElementById('accounts-list');
 
             if (filtered.length === 0) {
-                listEl.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-60 text-slate-500"><i class="ph ph-magnifying-glass text-6xl mb-4 opacity-50"></i><p>Trống</p></div>`;
+                const emptyMsg = state.searchQuery ? `Không tìm thấy kết quả cho "${state.searchQuery}"` : 'Trống';
+                listEl.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-60 text-slate-500"><i class="ph ph-magnifying-glass text-6xl mb-4 opacity-50"></i><p>${emptyMsg}</p></div>`;
                 return;
             }
 
@@ -597,7 +638,7 @@
                 let stIcon = isSold ? 'ph-currency-dollar' : (status==='completed'?'ph-check-circle':(status==='farming'?'ph-lightning':'ph-clock'));
                 let stText = isSold ? 'ĐÃ BÁN' : (status==='completed'?'HOÀN THÀNH':(status==='farming'?'ĐANG CÀY':'CHỜ'));
 
-                // Manual Days Controls (Admin Only - FIXED)
+                // Manual Days Controls (Admin Only)
                 let manualControls = '';
                 if (state.currentUser.role === 'admin' && !isSold && !isPending && mode === 'manual') {
                     manualControls = `
@@ -633,7 +674,10 @@
                             ${acc.note ? `<div class="text-xs px-2 py-1 rounded inline-block bg-slate-800 text-slate-400">${acc.note}</div>` : ''}
                         </div>
                         <div class="flex flex-col justify-between items-end gap-2">
-                            <span class="text-lg font-bold text-emerald-500">${acc.price.toLocaleString()} đ</span>
+                            <div class="flex items-center justify-end gap-2 group/price">
+                                <span class="text-lg font-bold text-emerald-500">${acc.price.toLocaleString()} đ</span>
+                                ${!isSold ? `<button onclick="editPrice('${acc.id}', ${acc.price})" class="opacity-0 group-hover/price:opacity-100 p-1 text-slate-500 hover:text-indigo-400 transition-opacity"><i class="ph ph-pencil-simple"></i></button>` : ''}
+                            </div>
                             ${!isSold ? `
                                 <button onclick="toggleAccountMode('${acc.id}', '${mode}')" class="text-[10px] px-2 py-1 rounded border ${mode==='auto'?'bg-blue-900/20 text-blue-400 border-blue-800':'bg-slate-800 text-slate-400 border-slate-700'}">
                                     ${mode==='auto'?'AUTO':'MANUAL'}
@@ -652,7 +696,10 @@
                         <button onclick="copyAndStart('${acc.id}')" class="flex-1 py-2 px-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 ${isPending ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-800 text-slate-400'}">
                             <i class="ph ${isPending ? 'ph-play-circle' : 'ph-copy'}"></i> ${isPending ? 'Copy & Start' : 'Copy'}
                         </button>
-                        ${!isSold ? `<button onclick="requestSellSingle('${acc.id}')" class="p-2 rounded-lg bg-emerald-900/30 text-emerald-400"><i class="ph ph-currency-dollar"></i></button>` : ''}
+                        ${!isSold ? `
+                            <button onclick="requestSellSingle('${acc.id}')" class="p-2 rounded-lg bg-emerald-900/30 text-emerald-400"><i class="ph ph-currency-dollar"></i></button>
+                            <button onclick="requestWipe('${acc.id}')" class="p-2 rounded-lg bg-orange-900/30 text-orange-400" title="Wipe Data"><i class="ph ph-eraser"></i></button>
+                        ` : ''}
                         <button onclick="requestDelete('${acc.id}')" class="p-2 rounded-lg bg-rose-900/30 text-rose-400"><i class="ph ph-trash"></i></button>
                     </div>
                 </div>
@@ -708,6 +755,38 @@
                 status: status
             });
         }
+        
+        // --- PRICE EDITING ---
+        function editPrice(id, oldPrice) {
+            const modal = document.getElementById('modal-content');
+            modal.innerHTML = `
+                <h3 class="font-bold text-lg mb-4">Cập nhật giá</h3>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Giá mới (VNĐ)</label>
+                    <input type="number" id="edit-price-input" value="${oldPrice}" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:border-amber-500 outline-none text-white font-bold">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="closeModal()" class="flex-1 py-2 rounded bg-slate-700 text-white font-bold">Hủy</button>
+                    <button onclick="savePrice('${id}')" class="flex-1 py-2 rounded bg-emerald-600 text-white font-bold">Lưu</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('edit-price-input').focus();
+        }
+
+        async function savePrice(id) {
+            const newPrice = Number(document.getElementById('edit-price-input').value);
+            if (isNaN(newPrice) || newPrice < 0) return alert("Giá không hợp lệ");
+            
+            try {
+                await window.updateDoc(window.doc(window.db, "accounts", id), { price: newPrice });
+                showToast('Đã cập nhật giá');
+                closeModal();
+            } catch (e) {
+                console.error(e);
+                showToast('Lỗi khi cập nhật', 'error');
+            }
+        }
 
         async function copyAndStart(id) {
             const acc = state.accounts.find(a => a.id === id);
@@ -725,6 +804,31 @@
                 showToast('Đã xóa Acc', 'error');
                 closeModal();
             });
+        }
+        
+        // --- WIPE DATA LOGIC ---
+        function requestWipe(id) {
+             showConfirmModal('Wipe Data Acc', 'Bạn muốn reset tiến trình cày của acc này? (User/Pass vẫn giữ nguyên)', async () => {
+                await performWipe(id);
+                closeModal();
+            });
+        }
+
+        async function performWipe(id) {
+            try {
+                // Reset status to pending, days to 0, mode manual
+                await window.updateDoc(window.doc(window.db, "accounts", id), {
+                    status: 'pending',
+                    daysFarmed: 0,
+                    mode: 'manual',
+                    farmingStartedAt: null,
+                    // We keep username, password, price, note, createdAt
+                });
+                showToast('Đã Wipe Data thành công');
+            } catch(e) {
+                console.error(e);
+                showToast('Lỗi Wipe Data', 'error');
+            }
         }
 
         // --- SELLING LOGIC (Corrected Select Seller) ---
@@ -922,7 +1026,7 @@
             document.getElementById('modal-content').innerHTML = `
                 <h3 class="font-bold text-xl mb-2 text-center">${title}</h3><p class="text-center text-slate-400 mb-4">${msg}</p>
                 ${sellerHtml}
-                <div class="flex gap-2"><button onclick="closeModal()" class="flex-1 py-2 rounded bg-slate-700">Hủy</button><button id="confirm-btn" class="flex-1 py-2 rounded bg-indigo-600 text-white font-bold">OK</button></div>
+                <div class="flex gap-2"><button onclick="closeModal()" class="flex-1 py-2 rounded bg-slate-700">Hủy</button><button id="confirm-btn" class="flex-1 py-2 rounded bg-amber-600 text-white font-bold">OK</button></div>
             `;
             document.getElementById('confirm-btn').onclick = onConfirm;
             document.getElementById('modal-overlay').classList.remove('hidden');
@@ -962,13 +1066,23 @@
         }
 
         function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+        
         function showToast(msg, type='success') {
             const t = document.getElementById('toast');
             document.getElementById('toast-message').textContent = msg;
-            t.className = `fixed top-24 right-5 z-[100] px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3 font-medium text-white transition-all duration-300 ${type==='error'?'bg-rose-600':'bg-emerald-600'}`;
-            t.classList.remove('translate-x-full');
-            setTimeout(() => t.classList.add('translate-x-full'), 3000);
+            
+            // Icon
+            const icon = document.getElementById('toast-icon');
+            icon.className = type === 'error' ? 'ph ph-warning-circle text-4xl mb-1 text-rose-300' : 'ph ph-check-circle text-4xl mb-1 text-emerald-300';
+            
+            // Background
+            t.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-2 font-bold text-white transition-all duration-300 min-w-[240px] text-center border ${type==='error'?'bg-rose-900/90 border-rose-700 shadow-rose-900/50':'bg-emerald-900/90 border-emerald-700 shadow-emerald-900/50'} backdrop-blur-md opacity-100 scale-100 visible`;
+            
+            setTimeout(() => {
+                t.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-2 font-bold text-white transition-all duration-300 min-w-[240px] text-center opacity-0 scale-90 invisible`;
+            }, 2500);
         }
+        
         function copyToClipboard(txt, lbl) {
             navigator.clipboard.writeText(txt).then(() => showToast(`Đã copy ${lbl}`));
         }
