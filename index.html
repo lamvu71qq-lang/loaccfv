@@ -3,20 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BearAcc Pro</title>
-    <!-- Teddy Bear Icon -->
+    <title>BearAcc Pro v2</title>
+    <!-- Icon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧸</text></svg>">
     
-    <!-- Tailwind CSS -->
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase Configuration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -25,7 +21,7 @@
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
-          apiKey: "AIzaSyBXY_kuplXAslH11t4rLRVo0-kyqmt4m3E",
+          apiKey: "", 
           authDomain: "lo-acc-fv.firebaseapp.com",
           projectId: "lo-acc-fv",
           storageBucket: "lo-acc-fv.firebasestorage.app",
@@ -38,7 +34,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Expose DB functions to global window
+        // Export to window for global access
         window.db = db;
         window.collection = collection;
         window.doc = doc;
@@ -54,90 +50,74 @@
         window.writeBatch = writeBatch;
 
         signInAnonymously(auth).then(() => {
-            console.log("Connected to Firebase");
+            console.log("Firebase Connected");
             window.initApp();
-        }).catch((error) => {
-            console.error("Firebase Auth Error", error);
-            alert("Lỗi kết nối Server! Vui lòng reload.");
-        });
+        }).catch((error) => console.error("Auth Error", error));
     </script>
 
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
-                fontFamily: {
-                    sans: ['Inter', 'sans-serif'],
-                    mono: ['JetBrains Mono', 'monospace'],
-                },
+                fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
                 extend: {
                     animation: {
                         'slide-in': 'slideIn 0.4s ease-out forwards',
                         'fade-in': 'fadeIn 0.2s ease-out forwards',
                         'scale-in': 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
                     },
                     keyframes: {
-                        slideIn: {
-                            'from': { opacity: '0', transform: 'translateY(20px)' },
-                            'to': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        fadeIn: {
-                            'from': { opacity: '0' },
-                            'to': { opacity: '1' },
-                        },
-                        scaleIn: {
-                            'from': { transform: 'scale(0.9)', opacity: '0' },
-                            'to': { transform: 'scale(1)', opacity: '1' },
-                        },
-                        popIn: {
-                            'from': { opacity: '0', transform: 'translate(-50%, -40%) scale(0.9)' },
-                            'to': { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' }
-                        }
+                        slideIn: { 'from': { opacity: '0', transform: 'translateY(20px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
+                        fadeIn: { 'from': { opacity: '0' }, 'to': { opacity: '1' } },
+                        scaleIn: { 'from': { transform: 'scale(0.9)', opacity: '0' }, 'to': { transform: 'scale(1)', opacity: '1' } }
                     }
                 }
             }
         }
     </script>
-
     <style>
         .dark ::-webkit-scrollbar { width: 8px; }
         .dark ::-webkit-scrollbar-track { background: #0f172a; }
         .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
         body { transition: background-color 0.3s, color 0.3s; }
+        .loading-overlay { position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans pb-20">
 
+    <div id="loading" class="loading-overlay">
+        <div class="flex flex-col items-center gap-4">
+            <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-amber-500 font-bold">Đang kết nối hệ thống...</p>
+        </div>
+    </div>
+
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div id="login-screen" class="hidden min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl border bg-slate-900 border-slate-800 animate-scale-in">
             <div class="flex flex-col items-center mb-6">
-                <!-- Teddy Bear Icon -->
-                <div class="bg-amber-600 p-4 rounded-full mb-4 shadow-lg shadow-amber-500/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 256 256">
-                        <path d="M224,96a56.06,56.06,0,0,0-56-56,8,8,0,0,0-8,8,40,40,0,0,1-80,0,8,8,0,0,0-8-8,56.06,56.06,0,0,0-56,56,8,8,0,0,0,8,8,40,40,0,0,1,33.84,18.78,56.12,56.12,0,0,0,84.32,0A40,40,0,0,1,176,104,8,8,0,0,0,224,96ZM48,96a40,40,0,0,1,28.62-38.34A56,56,0,0,0,32,96c0,13.23,7.26,24.83,18.09,31.72A40.16,40.16,0,0,1,48,96Zm174.12,32.3A56.1,56.1,0,0,0,186,171.18c4.37,8.22,6.58,16.59,6,24.23-.74,9.65-6.69,17-15.65,19.33a54.54,54.54,0,0,1-13.67,1.72c-9.1,0-19.36-2.58-29.07-7.29a8,8,0,0,0-7.22,0c-9.71,4.71-20,7.29-29.07,7.29a54.54,54.54,0,0,1-13.67-1.72c-9-2.31-14.91-9.68-15.65-19.33-.55-7.64,1.66-16,6-24.23a56,56,0,0,0,0-85.36c.7-1.32,1.44-2.61,2.22-3.86a56,56,0,0,0,145.87,49.22ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path>
-                    </svg>
+                <div class="bg-amber-600 p-4 rounded-full mb-4 shadow-lg shadow-amber-500/30 text-white">
+                    <i class="ph-bold ph-bear text-4xl"></i>
                 </div>
                 <h1 class="text-2xl font-bold text-amber-500">BearAcc Pro</h1>
-                <p class="text-slate-400 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Firebase Live Sync</p>
+                <p class="text-slate-400 text-sm mt-1">Quản lý & Bán acc tự động</p>
             </div>
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase mb-1.5 opacity-70">Username</label>
-                    <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="Nhập tên đăng nhập" autofocus>
+                    <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="admin" required>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase mb-1.5 opacity-70">Password</label>
-                    <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="••••••">
+                    <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-••••••" required>
                 </div>
                 <div id="login-error" class="hidden p-3 rounded-lg bg-rose-500/10 text-rose-500 text-sm font-bold flex items-center gap-2">
-                    <i class="ph ph-warning-circle"></i> <span>Sai tên đăng nhập hoặc mật khẩu!</span>
+                    <i class="ph ph-warning-circle"></i> <span>Sai thông tin đăng nhập!</span>
                 </div>
-                <div id="loading-msg" class="hidden text-center text-amber-400 font-bold text-sm animate-pulse">Đang tải dữ liệu từ server...</div>
                 <button type="submit" id="btn-login" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/30 active:scale-95">Đăng Nhập</button>
             </form>
+            <p class="text-center text-[10px] text-slate-500 mt-6 uppercase tracking-widest font-bold">Bear System V2.1</p>
         </div>
     </div>
 
@@ -147,32 +127,33 @@
             <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <div class="bg-amber-600 p-1.5 rounded-lg text-white shadow-lg shadow-amber-500/30">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M224,96a56.06,56.06,0,0,0-56-56,8,8,0,0,0-8,8,40,40,0,0,1-80,0,8,8,0,0,0-8-8,56.06,56.06,0,0,0-56,56,8,8,0,0,0,8,8,40,40,0,0,1,33.84,18.78,56.12,56.12,0,0,0,84.32,0A40,40,0,0,1,176,104,8,8,0,0,0,224,96ZM48,96a40,40,0,0,1,28.62-38.34A56,56,0,0,0,32,96c0,13.23,7.26,24.83,18.09,31.72A40.16,40.16,0,0,1,48,96Zm174.12,32.3A56.1,56.1,0,0,0,186,171.18c4.37,8.22,6.58,16.59,6,24.23-.74,9.65-6.69,17-15.65,19.33a54.54,54.54,0,0,1-13.67,1.72c-9.1,0-19.36-2.58-29.07-7.29a8,8,0,0,0-7.22,0c-9.71,4.71-20,7.29-29.07,7.29a54.54,54.54,0,0,1-13.67-1.72c-9-2.31-14.91-9.68-15.65-19.33-.55-7.64,1.66-16,6-24.23a56,56,0,0,0,0-85.36c.7-1.32,1.44-2.61,2.22-3.86a56,56,0,0,0,145.87,49.22ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path>
-                        </svg>
+                        <i class="ph-bold ph-bear text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold leading-none text-amber-500">BearAcc Pro</h1>
+                        <h1 class="text-xl font-bold leading-none text-amber-500">BearAcc</h1>
                         <div class="flex items-center gap-2 mt-1">
-                            <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase bg-rose-500 text-white">ADMIN</span>
+                            <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">ROLE</span>
                             <span id="user-name-display" class="text-xs font-medium text-slate-400">User</span>
                         </div>
                     </div>
                 </div>
+                
+                <!-- CUSTOMER BALANCE -->
+                <div id="customer-balance-display" class="hidden px-4 py-1.5 rounded-full bg-slate-800 border border-emerald-500/30 flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Số dư:</span>
+                    <span id="current-balance" class="text-emerald-400 font-bold font-mono">0 đ</span>
+                </div>
+
                 <div class="flex items-center gap-2 md:gap-3">
                     <div id="admin-header-controls" class="flex gap-2">
-                        <button onclick="showWipeSystemModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-rose-500 hover:bg-slate-700 hover:text-rose-400" title="Wipe System Data"><i class="ph ph-trash text-xl"></i></button>
-                        <button onclick="showUserManageModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-purple-400 hover:bg-slate-700" title="Quản lý Users"><i class="ph ph-user-gear text-xl"></i></button>
-                        <button onclick="showHistoryModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-blue-400 hover:bg-slate-700" title="Lịch sử giao dịch"><i class="ph ph-clock-counter-clockwise text-xl"></i></button>
+                         <button onclick="showSystemSettings()" class="p-2.5 rounded-full transition-all bg-slate-800 text-slate-300 hover:bg-slate-700" title="Cài đặt"><i class="ph ph-gear-six text-xl"></i></button>
+                        <button onclick="showUserManageModal()" class="p-2.5 rounded-full transition-all bg-slate-800 text-purple-400 hover:bg-slate-700" title="Users"><i class="ph ph-users text-xl"></i></button>
+                        <button onclick="showHistoryModal()" class="p-2.5 rounded-full transition-all bg-slate-800 text-blue-400 hover:bg-slate-700" title="Lịch sử"><i class="ph ph-clock-counter-clockwise text-xl"></i></button>
                     </div>
-                    <!-- Settings for Viewer -->
-                    <button id="viewer-settings-btn" onclick="showViewerSettingsModal()" class="hidden p-2.5 rounded-full transition-all bg-slate-800 text-indigo-400 hover:bg-slate-700" title="Cài đặt cá nhân">
-                        <i class="ph ph-gear text-xl"></i>
-                    </button>
                     <button onclick="toggleTheme()" class="p-2.5 rounded-full transition-all bg-slate-800 text-yellow-400 hover:bg-slate-700">
                         <i id="theme-icon" class="ph ph-sun text-xl"></i>
                     </button>
-                    <button onclick="logout()" class="p-2.5 rounded-full transition-all bg-slate-800 text-rose-400 hover:bg-slate-700" title="Đăng xuất">
+                    <button onclick="logout()" class="p-2.5 rounded-full transition-all bg-slate-800 text-rose-400 hover:bg-slate-700">
                         <i class="ph ph-sign-out text-xl"></i>
                     </button>
                 </div>
@@ -180,282 +161,194 @@
         </header>
 
         <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
-            <!-- VIEWER STATS -->
-            <div id="viewer-stats-container" class="hidden p-6 rounded-2xl border bg-slate-900 border-slate-800 shadow-lg mb-8"></div>
-            
-            <!-- ADMIN STATS -->
-            <section id="admin-stats-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"></section>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <!-- SIDEBAR -->
-                <div class="lg:col-span-4 space-y-6">
-                    <div id="admin-controls" class="space-y-6">
-                        <!-- SELL RANDOM -->
-                        <div class="rounded-2xl p-6 shadow-sm border relative overflow-hidden group bg-gradient-to-br from-slate-900 to-purple-900/20 border-purple-500/30">
-                            <div class="flex items-center justify-between mb-4">
-                                <h2 class="font-bold text-lg flex items-center gap-2 text-white"><i class="ph ph-shuffle text-purple-500 text-xl"></i> Bán Random</h2>
-                                <span id="ready-count-badge" class="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">0 Acc sẵn</span>
-                            </div>
-                            <div class="mb-4">
-                                <label class="text-[10px] font-bold uppercase opacity-70 mb-1 block">Số lượng bán</label>
-                                <div class="flex items-center gap-2">
-                                    <button onclick="adjustSellQty(-1)" class="p-2 rounded border bg-slate-800 border-slate-700 hover:bg-slate-700"><i class="ph ph-minus"></i></button>
-                                    <input type="number" id="sell-qty-input" value="1" class="w-full text-center p-2 rounded border font-bold bg-slate-800 border-slate-700 outline-none" min="1">
-                                    <button onclick="adjustSellQty(1)" class="p-2 rounded border bg-slate-800 border-slate-700 hover:bg-slate-700"><i class="ph ph-plus"></i></button>
-                                </div>
-                            </div>
-                            <button onclick="requestSellRandom()" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-lg shadow-purple-500/30 active:scale-95 transition-all flex justify-center items-center gap-2">
-                                <i class="ph ph-currency-dollar text-xl"></i> Bán Ngay
-                            </button>
-                        </div>
-
-                        <!-- HOTMAIL GENERATOR -->
-                        <div class="rounded-2xl p-6 shadow-sm transition-all bg-slate-900 border-slate-800 border hover:border-slate-700">
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="p-2 rounded-lg bg-blue-900/30 text-blue-400"><i class="ph ph-arrows-clockwise text-xl"></i></div>
-                                <h2 class="font-bold text-lg">Hotmail Auto</h2>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="p-4 rounded-xl border border-dashed relative bg-slate-800 border-slate-700">
-                                    <div class="space-y-2 font-mono text-sm">
-                                        <div class="flex justify-between"><span class="text-slate-400">User:</span><span id="gen-email" class="font-semibold select-all text-white">---</span></div>
-                                        <div class="flex justify-between"><span class="text-slate-400">Pass:</span><span id="gen-pass" class="font-semibold select-all text-white">---</span></div>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3">
-                                    <button onclick="generateHotmail()" class="flex-1 py-2.5 rounded-xl font-medium transition-all active:scale-95 text-white bg-slate-700 hover:bg-slate-600">Random</button>
-                                    <button id="btn-fill-form" onclick="fillForm()" disabled class="flex-1 border py-2.5 rounded-xl font-medium transition-all active:scale-95 flex justify-center items-center gap-2 bg-indigo-900/40 border-indigo-700 text-indigo-300 opacity-50 cursor-not-allowed">Điền <i class="ph ph-arrow-right"></i></button>
-                                </div>
+            <!-- CUSTOMER DASHBOARD -->
+            <div id="customer-dashboard" class="hidden space-y-8 animate-fade-in">
+                <div class="bg-gradient-to-r from-indigo-900 via-slate-900 to-purple-900 rounded-3xl p-8 md:p-12 relative overflow-hidden border border-white/10 shadow-2xl">
+                    <div class="relative z-10">
+                        <h2 class="text-4xl font-bold text-white mb-4">Mua Account Random</h2>
+                        <p class="text-indigo-200 mb-8 text-lg">Hệ thống tự động, bảo hành 24h.</p>
+                        
+                        <div class="flex items-center gap-6 mb-8">
+                            <div class="text-5xl font-bold text-emerald-400 font-mono" id="display-guest-price">55.000đ</div>
+                            <div class="h-10 w-px bg-white/20"></div>
+                            <div class="text-white">
+                                <div class="text-sm opacity-70">Sẵn có</div>
+                                <div class="font-bold text-xl" id="customer-stock-count">0</div>
                             </div>
                         </div>
 
-                        <!-- ADD ACCOUNT -->
-                        <div class="rounded-2xl p-6 shadow-sm transition-all relative overflow-hidden bg-slate-900 border-slate-800 border hover:border-slate-700">
-                            <div class="flex items-center gap-3 mb-5 relative z-10">
-                                <div class="p-2 rounded-lg bg-emerald-900/30 text-emerald-400"><i class="ph ph-users text-xl"></i></div>
-                                <h2 class="font-bold text-lg">Nhập Liệu</h2>
-                            </div>
-                            <form id="add-acc-form" onsubmit="handleAddAccount(event)" class="space-y-4 relative z-10">
-                                <div class="space-y-3">
-                                    <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Email / Username">
-                                    <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Password">
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <input type="number" id="input-price" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Giá (VNĐ)">
-                                    <input type="text" id="input-note" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Ghi chú">
-                                </div>
-                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95 mt-2 flex justify-center items-center gap-2">
-                                    <i class="ph ph-plus-circle text-lg"></i> Thêm Acc
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- VIEWER PLACEHOLDER -->
-                    <div id="viewer-placeholder" class="hidden h-full rounded-2xl p-8 flex flex-col items-center justify-center text-center opacity-60 border-2 border-dashed border-slate-800">
-                        <i class="ph ph-shield-check text-5xl mb-4 text-slate-500"></i>
-                        <h3 class="font-bold text-lg">Chế độ Viewer</h3>
-                        <p class="text-sm text-slate-400">Danh sách tài khoản được ẩn.</p>
+                        <button onclick="customerBuyRandom()" class="px-8 py-4 bg-amber-500 text-slate-950 rounded-xl font-bold text-lg hover:bg-amber-400 transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                            <i class="ph ph-shopping-cart-simple text-xl"></i> Mua Ngay
+                        </button>
+                        <p id="balance-warning" class="hidden text-rose-400 mt-4 font-bold flex items-center gap-2 animate-bounce">
+                            <i class="ph ph-warning-circle"></i> Vui lòng liên hệ Admin nạp thêm tiền!
+                        </p>
                     </div>
                 </div>
 
-                <!-- MAIN LIST -->
-                <div class="lg:col-span-8 flex flex-col h-[800px] rounded-2xl shadow-lg overflow-hidden border bg-slate-900 border-slate-800">
-                    <div id="admin-list-container" class="flex flex-col h-full">
-                        <!-- HEADER AREA WITH SEARCH -->
-                        <div class="p-4 border-b border-slate-800 bg-slate-900 space-y-3 z-10 sticky top-0">
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                                <div class="flex items-center gap-2">
-                                    <h2 class="font-bold text-lg">Kho Acc</h2>
-                                    <span id="list-count-badge" class="px-2 py-0.5 rounded-md text-xs font-bold bg-slate-800 text-slate-400">0</span>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><i class="ph ph-receipt text-amber-500"></i> Lịch sử đơn hàng</h3>
+                    <div id="customer-history-list" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- ADMIN/STAFF DASHBOARD -->
+            <div id="staff-dashboard" class="hidden space-y-8 animate-fade-in">
+                <div id="viewer-stats-container" class="hidden"></div>
+                <section id="admin-stats-container" class="grid grid-cols-2 md:grid-cols-4 gap-4"></section>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div class="lg:col-span-4 space-y-6">
+                        <div id="admin-controls" class="space-y-6">
+                            <div class="rounded-2xl p-6 bg-gradient-to-br from-slate-900 to-purple-950 border border-purple-500/20">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="font-bold text-lg text-white">Bán Random</h2>
+                                    <span id="ready-count-badge" class="text-[10px] bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">0</span>
                                 </div>
-                                <!-- SEARCH BAR -->
-                                <div class="relative w-full sm:w-64 group">
-                                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors"></i>
-                                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Tìm username, note..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:border-amber-500 outline-none transition-all placeholder-slate-600 focus:bg-slate-950">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <button onclick="adjustSellQty(-1)" class="p-2 rounded bg-slate-800 border border-slate-700">-</button>
+                                    <input type="number" id="sell-qty-input" value="1" class="w-full text-center p-2 rounded bg-slate-800 border border-slate-700 font-bold outline-none">
+                                    <button onclick="adjustSellQty(1)" class="p-2 rounded bg-slate-800 border border-slate-700">+</button>
                                 </div>
+                                <button onclick="requestSellRandom()" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-lg shadow-purple-950">Xuất Acc</button>
                             </div>
-                            
-                            <!-- FILTERS -->
-                            <div class="flex p-1 rounded-lg overflow-x-auto max-w-full bg-slate-800 scrollbar-hide" id="filter-buttons">
-                                <button onclick="setFilter('all')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize bg-slate-700 text-amber-500 shadow" data-filter="all">Tất cả</button>
-                                <button onclick="setFilter('pending')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="pending">Chờ</button>
-                                <button onclick="setFilter('farming')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="farming">Đang cày</button>
-                                <button onclick="setFilter('completed')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="completed">Xong</button>
-                                <button onclick="setFilter('sold')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="sold">Đã bán</button>
+
+                            <div class="rounded-2xl p-6 bg-slate-900 border border-slate-800">
+                                <h2 class="font-bold mb-4 flex items-center gap-2"><i class="ph ph-plus-circle text-emerald-500"></i> Nhập Acc</h2>
+                                <form id="add-acc-form" onsubmit="handleAddAccount(event)" class="space-y-4">
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="generateHotmail()" class="text-[10px] font-bold bg-slate-800 px-2 py-1 rounded border border-slate-700 hover:bg-slate-700">GEN HOTMAIL</button>
+                                    </div>
+                                    <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-sm" placeholder="User / Email" required>
+                                    <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-sm" placeholder="Pass" required>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="number" id="input-price" class="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-sm" placeholder="Giá gốc">
+                                        <input type="text" id="input-note" class="w-full px-3 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-sm" placeholder="Ghi chú">
+                                    </div>
+                                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg">Thêm</button>
+                                </form>
                             </div>
                         </div>
-
-                        <div id="accounts-list" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-950/50"></div>
                     </div>
-                    <div id="viewer-list-placeholder" class="hidden h-full flex flex-col items-center justify-center text-slate-500">
-                        <i class="ph ph-lock-key text-6xl mb-4 opacity-20"></i>
-                        <p class="text-xl font-bold opacity-50">Dữ liệu bảo mật</p>
+
+                    <div class="lg:col-span-8">
+                        <div id="admin-list-container" class="rounded-2xl border bg-slate-900 border-slate-800 overflow-hidden flex flex-col h-[600px]">
+                            <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
+                                <h2 class="font-bold">Kho Acc</h2>
+                                <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Tìm kiếm..." class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sm outline-none w-full sm:w-48">
+                            </div>
+                            <div class="p-2 border-b border-slate-800 flex gap-1 overflow-x-auto no-scrollbar">
+                                <button onclick="setFilter('all')" class="filter-btn text-[10px] font-bold px-3 py-1.5 rounded bg-slate-700 text-amber-500" data-filter="all">TẤT CẢ</button>
+                                <button onclick="setFilter('pending')" class="filter-btn text-[10px] font-bold px-3 py-1.5 rounded text-slate-400" data-filter="pending">CHỜ</button>
+                                <button onclick="setFilter('completed')" class="filter-btn text-[10px] font-bold px-3 py-1.5 rounded text-slate-400" data-filter="completed">XONG</button>
+                                <button onclick="setFilter('sold')" class="filter-btn text-[10px] font-bold px-3 py-1.5 rounded text-slate-400" data-filter="sold">BÁN</button>
+                            </div>
+                            <div id="accounts-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+                        </div>
+                        <div id="viewer-placeholder" class="hidden h-64 border-2 border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-500 font-bold">CHẾ ĐỘ XEM CHỈ SỐ</div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- MODAL OVERLAY -->
+    <!-- MODALS -->
     <div id="modal-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-        <div id="modal-content" class="w-full max-w-sm rounded-2xl p-6 shadow-2xl border animate-scale-in bg-slate-900 border-slate-700 text-white relative">
-            <!-- Content Injected via JS -->
-        </div>
+        <div id="modal-content" class="w-full max-w-md rounded-2xl p-6 shadow-2xl border bg-slate-900 border-slate-700 animate-scale-in"></div>
+    </div>
+    <div id="large-modal-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div id="large-modal-content" class="w-full max-w-4xl h-[80vh] rounded-2xl shadow-2xl border bg-slate-900 border-slate-700 overflow-hidden flex flex-col animate-scale-in"></div>
     </div>
 
-    <!-- LARGE MODAL OVERLAY -->
-    <div id="large-modal-overlay" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-        <div id="large-modal-content" class="w-full sm:max-w-2xl h-[80vh] sm:h-[600px] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl border animate-slide-in bg-slate-900 border-slate-700 text-white relative"></div>
-    </div>
-
-    <!-- CENTERED TOAST (NOTIFICATION) -->
-    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-6 py-4 rounded-xl shadow-2xl flex flex-col items-center justify-center gap-2 font-medium text-white transition-all duration-300 opacity-0 scale-90 invisible min-w-[200px] text-center">
-        <i id="toast-icon" class="ph ph-check-circle text-4xl mb-1"></i>
-        <span id="toast-message" class="text-lg">Notification</span>
-    </div>
+    <!-- TOAST -->
+    <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-2xl text-white font-bold transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none"></div>
 
     <script>
-        // --- GLOBAL STATE ---
         let state = {
             currentUser: null,
-            users: [], // Sync from Firebase
-            accounts: [], // Sync from Firebase
-            history: [], // Sync from Firebase
+            users: [],
+            accounts: [],
+            history: [],
+            settings: { guestPrice: 55000, commissions: [{threshold: 0, rate: 0.05}] },
             filter: 'all',
             searchQuery: '',
-            isDark: true,
-            sellQuantity: 1
+            isDark: true
         };
 
-        // --- COMMISSION LOGIC ---
-        function getCommissionRate(count) {
-            if (count >= 50) return 0.07;
-            if (count >= 20) return 0.05;
-            return 0.02;
-        }
+        const formatVND = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+        const formatDate = (ts) => new Date(ts).toLocaleString('vi-VN');
 
-        // --- APP INITIALIZATION ---
         window.initApp = async () => {
-            // Apply Theme
-            const storedTheme = localStorage.getItem('theme');
-            if (storedTheme === 'light') {
-                state.isDark = false;
-                document.documentElement.classList.remove('dark');
+            // Theme
+            if (localStorage.getItem('theme') === 'light') {
+                state.isDark = false; document.documentElement.classList.remove('dark');
             }
-            updateThemeIcon();
 
-            // Set up Realtime Listeners
+            // Realtime Listeners
             setupListeners();
             
-            // Check & Seed Users if empty
-            await checkAndSeedUsers();
-
-            // Setup Auto-Updater (Client-side Timer for farming days display)
-            setInterval(() => {
-                if (state.currentUser && state.currentUser.role === 'admin') {
-                    renderAccounts(); // Re-render to update timers visual
-                }
-            }, 60000);
-        };
-
-        // --- FIREBASE LISTENERS ---
-        function setupListeners() {
-            // Accounts
-            window.onSnapshot(window.query(window.collection(window.db, "accounts")), (snapshot) => {
-                state.accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Sort by createdAt desc locally for display
-                state.accounts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                
-                if (state.currentUser) {
-                    renderApp(); // Data change triggers render
-                }
-            });
-
-            // History
-            window.onSnapshot(window.query(window.collection(window.db, "history")), (snapshot) => {
-                state.history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                state.history.sort((a, b) => (b.soldAt || 0) - (a.soldAt || 0));
-                if (state.currentUser) renderApp();
-            });
-
-            // Users
-            window.onSnapshot(window.query(window.collection(window.db, "users")), (snapshot) => {
-                state.users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // If current user details changed in DB (e.g. password changed), update local session
-                if (state.currentUser) {
-                    const freshUser = state.users.find(u => u.id === state.currentUser.id);
-                    if (freshUser) {
-                        state.currentUser = freshUser; // Keep session sync
-                        renderApp();
-                    } else {
-                        // User deleted? Logout
-                        logout(); 
-                    }
-                }
-            });
-        }
-
-        async function checkAndSeedUsers() {
-            const userRef = window.collection(window.db, "users");
-            const snap = await window.getDocs(userRef);
-
-            // 1. Check/Create Super Admin specifically (Force Create if missing)
-            const superAdminRef = window.doc(window.db, "users", "administrator");
-            const superAdminSnap = await window.getDoc(superAdminRef);
-            
-            if (!superAdminSnap.exists()) {
-                console.log("Creating Super Admin...");
-                await window.setDoc(superAdminRef, {
-                    id: 'administrator', username: 'administrator', password: '2122', role: 'admin', name: 'AdminScript'
+            // Check Admin exists
+            const adminDoc = await window.getDoc(window.doc(window.db, "users", "admin"));
+            if (!adminDoc.exists()) {
+                await window.setDoc(window.doc(window.db, "users", "admin"), {
+                    id: 'admin', username: 'admin', password: '111', role: 'admin', name: 'System Admin', balance: 0
                 });
             }
 
-            // 2. Seed others ONLY if totally empty
-            if (snap.empty) {
-                console.log("Seeding other default users...");
-                const defaultUsers = [
-                    { id: 'admin', username: 'Admin', password: '1111', role: 'admin', name: 'Administrator' },
-                    { id: 'minh', username: 'minh', password: '1234', role: 'viewer', name: 'Minh Sale' },
-                    { id: 'huy', username: 'huy', password: '1234', role: 'viewer', name: 'Huy Sale' }
-                ];
-                for (const u of defaultUsers) {
-                    // Don't overwrite administrator if it was just created/exists
-                    if (u.id !== 'administrator') {
-                         await window.setDoc(window.doc(window.db, "users", u.id), u);
-                    }
-                }
-            }
-            
-            // Enable login button after initial check
-            document.getElementById('loading-msg').classList.add('hidden');
+            // Hide loading
+            setTimeout(() => {
+                document.getElementById('loading').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('login-screen').classList.remove('hidden');
+                }, 500);
+            }, 1000);
+        };
+
+        function setupListeners() {
+            window.onSnapshot(window.collection(window.db, "users"), (snap) => {
+                state.users = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                if(state.currentUser) state.currentUser = state.users.find(u => u.id === state.currentUser.id);
+                renderApp();
+            });
+            window.onSnapshot(window.collection(window.db, "accounts"), (snap) => {
+                state.accounts = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+                renderApp();
+            });
+            window.onSnapshot(window.collection(window.db, "history"), (snap) => {
+                state.history = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>(b.soldAt||0)-(a.soldAt||0));
+                renderApp();
+            });
+            window.onSnapshot(window.doc(window.db, "system", "settings"), (doc) => {
+                if(doc.exists()) state.settings = doc.data();
+                renderApp();
+            });
         }
 
-        // --- AUTH SYSTEM ---
-        document.getElementById('login-form').addEventListener('submit', (e) => {
+        // AUTH
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const userIn = document.getElementById('login-username').value.trim();
-            const passIn = document.getElementById('login-password').value.trim();
-            
-            if (state.users.length === 0) {
-                document.getElementById('loading-msg').classList.remove('hidden');
-                return;
-            }
+            const btn = document.getElementById('btn-login');
+            btn.textContent = 'Đang kiểm tra...';
+            btn.disabled = true;
 
-            const user = state.users.find(u => 
-                u.username.toLowerCase() === userIn.toLowerCase() && u.password === passIn
-            );
+            const uIn = document.getElementById('login-username').value.trim().toLowerCase();
+            const pIn = document.getElementById('login-password').value.trim();
 
-            if (user) {
-                state.currentUser = user;
+            // Lấy trực tiếp từ Firestore để chắc chắn nhất
+            const userRef = window.doc(window.db, "users", uIn);
+            const userSnap = await window.getDoc(userRef);
+
+            if (userSnap.exists() && userSnap.data().password === pIn) {
+                state.currentUser = {id: userSnap.id, ...userSnap.data()};
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('login-error').classList.add('hidden');
-                showToast(`Xin chào ${user.name}!`, 'success');
                 renderApp();
+                showToast(`Chào mừng, ${state.currentUser.name}!`);
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
+                btn.textContent = 'Đăng Nhập';
+                btn.disabled = false;
             }
         });
 
@@ -463,779 +356,373 @@
             state.currentUser = null;
             document.getElementById('app-screen').classList.add('hidden');
             document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
+            document.getElementById('btn-login').textContent = 'Đăng Nhập';
+            document.getElementById('btn-login').disabled = false;
         }
 
-        // --- RENDER LOGIC ---
+        // RENDER
         function renderApp() {
             if (!state.currentUser) return;
-            const isAdmin = state.currentUser.role === 'admin';
+            const u = state.currentUser;
+            
+            // UI Switch
+            const isCust = u.role === 'customer';
+            const isAdmin = u.role === 'admin';
 
-            // Header
-            document.getElementById('user-name-display').textContent = state.currentUser.name;
-            const roleBadge = document.getElementById('user-role-badge');
-            roleBadge.textContent = isAdmin ? 'ADMIN' : 'VIEWER';
-            roleBadge.className = `text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-white ${isAdmin ? 'bg-rose-500' : 'bg-blue-500'}`;
+            document.getElementById('user-name-display').textContent = u.name;
+            const badge = document.getElementById('user-role-badge');
+            badge.textContent = u.role === 'admin' ? 'ADMIN' : (u.role === 'customer' ? 'KHÁCH' : 'VIEWER');
+            badge.className = `text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${isAdmin?'bg-rose-500 text-white':(isCust?'bg-emerald-500 text-white':'bg-blue-500 text-white')}`;
 
-            // Visibility
-            const adminEls = ['admin-controls', 'admin-list-container', 'admin-stats-container', 'admin-header-controls'];
-            const viewerEls = ['viewer-placeholder', 'viewer-list-placeholder', 'viewer-stats-container', 'viewer-settings-btn'];
-
-            if (isAdmin) {
-                adminEls.forEach(id => document.getElementById(id).classList.remove('hidden'));
-                viewerEls.forEach(id => document.getElementById(id).classList.add('hidden'));
-                renderStats();
-                renderAccounts();
+            if(isCust) {
+                document.getElementById('customer-dashboard').classList.remove('hidden');
+                document.getElementById('staff-dashboard').classList.add('hidden');
+                document.getElementById('admin-header-controls').classList.add('hidden');
+                document.getElementById('customer-balance-display').classList.remove('hidden');
+                document.getElementById('current-balance').textContent = formatVND(u.balance || 0);
+                renderCustomer();
             } else {
-                adminEls.forEach(id => document.getElementById(id).classList.add('hidden'));
-                viewerEls.forEach(id => document.getElementById(id).classList.remove('hidden'));
-                renderViewerStats();
+                document.getElementById('customer-dashboard').classList.add('hidden');
+                document.getElementById('staff-dashboard').classList.remove('hidden');
+                document.getElementById('customer-balance-display').classList.add('hidden');
+                
+                if(isAdmin) {
+                    document.getElementById('admin-header-controls').classList.remove('hidden');
+                    document.getElementById('admin-controls').classList.remove('hidden');
+                    document.getElementById('admin-list-container').classList.remove('hidden');
+                    document.getElementById('viewer-placeholder').classList.add('hidden');
+                    renderAdminStats();
+                } else {
+                    document.getElementById('admin-header-controls').classList.add('hidden');
+                    document.getElementById('admin-controls').classList.add('hidden');
+                    document.getElementById('admin-list-container').classList.add('hidden');
+                    document.getElementById('viewer-placeholder').classList.remove('hidden');
+                    renderViewerStats();
+                }
+                renderAccountList();
             }
         }
 
-        function renderStats() {
-            const total = state.accounts.length;
-            const unsold = state.accounts.filter(a => a.status !== 'sold').length;
-            const sold = state.accounts.filter(a => a.status === 'sold').length;
-            const revenue = state.history.reduce((sum, h) => sum + h.price, 0);
+        // CUSTOMER LOGIC
+        function renderCustomer() {
+            const stock = state.accounts.filter(a => a.status === 'completed').length;
+            document.getElementById('customer-stock-count').textContent = stock;
+            document.getElementById('display-guest-price').textContent = formatVND(state.settings.guestPrice || 55000);
             
-            // Logic completed check
-            const completed = state.accounts.filter(a => {
-                if (a.status === 'sold') return false;
-                if (a.status === 'completed') return true;
-                if (a.status === 'farming' && a.mode === 'auto' && a.farmingStartedAt) {
-                    const days = (Date.now() - a.farmingStartedAt) / (1000 * 60 * 60 * 24);
-                    return days >= 23;
-                }
-                return false;
-            }).length;
-
-            document.getElementById('ready-count-badge').textContent = `${completed} Acc sẵn`;
-
-            const cardBg = state.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-transparent';
-            const items = [
-                { t: 'Tổng Acc', v: total, c: 'text-slate-500', i: 'ph-stack' },
-                { t: 'Chưa bán', v: unsold, c: 'text-indigo-500', i: 'ph-bag', b: 'bg-indigo-900/20' },
-                { t: 'Đã bán', v: sold, c: 'text-emerald-500', i: 'ph-currency-dollar', b: 'bg-emerald-900/20' },
-                { t: 'Doanh thu', v: revenue.toLocaleString(), c: 'text-emerald-500', i: 'ph-trend-up', b: 'bg-emerald-900/20' },
-                { t: 'Sắp xong', v: 0, c: 'text-rose-500', i: 'ph-lightning', b: 'bg-rose-900/20' },
-                { t: 'Hoàn thành', v: completed, c: 'text-blue-500', i: 'ph-check-circle', b: 'bg-blue-900/20' },
-            ];
-
-            const html = items.map(x => `
-                <div class="${x.b || 'bg-transparent'} ${cardBg} border rounded-2xl p-4 transition-all shadow-sm">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-[10px] font-bold uppercase tracking-wider ${state.isDark ? 'text-slate-500' : 'text-slate-400'}">${x.t}</span>
-                        <i class="ph ${x.i} ${x.c}"></i>
+            const myHist = state.history.filter(h => h.soldTo === state.currentUser.id);
+            document.getElementById('customer-history-list').innerHTML = myHist.length ? myHist.map(h => `
+                <div class="p-4 bg-slate-800/50 border border-slate-700 rounded-xl flex justify-between items-center group hover:border-amber-500/50 transition-colors">
+                    <div>
+                        <div class="font-mono text-white text-sm select-all">${h.username} | ${h.password}</div>
+                        <div class="text-[10px] text-slate-500 mt-1">${formatDate(h.soldAt)}</div>
                     </div>
-                    <span class="text-2xl font-bold ${x.c}">${x.v}</span>
+                    <div class="text-emerald-400 font-bold font-mono">${formatVND(h.price)}</div>
+                </div>
+            `).join('') : '<p class="text-center text-slate-500 py-4 italic text-sm">Chưa có giao dịch.</p>';
+        }
+
+        async function customerBuyRandom() {
+            const price = state.settings.guestPrice || 55000;
+            if((state.currentUser.balance || 0) < price) {
+                document.getElementById('balance-warning').classList.remove('hidden');
+                setTimeout(()=>document.getElementById('balance-warning').classList.add('hidden'), 5000);
+                return;
+            }
+            const ready = state.accounts.filter(a => a.status === 'completed');
+            if(!ready.length) return showToast('Hết hàng!', 'error');
+
+            if(!confirm(`Xác nhận mua 1 account với giá ${formatVND(price)}?`)) return;
+
+            const target = ready[Math.floor(Math.random() * ready.length)];
+            const batch = window.writeBatch(window.db);
+            
+            batch.update(window.doc(window.db, "users", state.currentUser.id), { balance: state.currentUser.balance - price });
+            batch.update(window.doc(window.db, "accounts", target.id), { status: 'sold', soldAt: Date.now(), soldBy: 'AUTO', soldTo: state.currentUser.id });
+            batch.set(window.doc(window.collection(window.db, "history")), {
+                accountId: target.id, username: target.username, password: target.password, price, soldAt: Date.now(), soldBy: 'AUTO', soldTo: state.currentUser.id
+            });
+
+            await batch.commit();
+            showToast('Mua thành công!');
+        }
+
+        // ADMIN LOGIC
+        function renderAdminStats() {
+            const totalRev = state.history.reduce((a,b)=>a+(b.price||0),0);
+            const stats = [
+                {l:'Tổng Acc', v:state.accounts.length, c:'text-blue-400'},
+                {l:'Sẵn Sàng', v:state.accounts.filter(a=>a.status==='completed').length, c:'text-emerald-400'},
+                {l:'Đã Bán', v:state.accounts.filter(a=>a.status==='sold').length, c:'text-purple-400'},
+                {l:'Doanh Thu', v:formatVND(totalRev), c:'text-amber-400'}
+            ];
+            document.getElementById('admin-stats-container').innerHTML = stats.map(s => `
+                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">${s.l}</div>
+                    <div class="text-lg font-bold ${s.c}">${s.v}</div>
                 </div>
             `).join('');
-            document.getElementById('admin-stats-container').innerHTML = html;
+            document.getElementById('ready-count-badge').textContent = state.accounts.filter(a=>a.status==='completed').length;
         }
 
         function renderViewerStats() {
-            const userId = state.currentUser.id;
-            const userSales = state.history.filter(h => h.soldBy === userId);
-            const count = userSales.length;
-            const totalCommission = userSales.reduce((sum, item) => sum + (item.commission || 0), 0);
+            const mySales = state.history.filter(h => h.soldBy === state.currentUser.name);
+            const count = mySales.length;
+            const rev = mySales.reduce((a,b)=>a+(b.price||0),0);
             
-            // Commission logic:
-            // 0-19: 2%
-            // 20-49: 5%
-            // 50+: 7%
-            let currentRate = 0.02;
-            let nextTierText = `Cần ${20 - count} acc để lên 5%`;
-            let progress = (count / 20) * 100;
+            const comms = (state.settings.commissions || []).sort((a,b)=>b.threshold - a.threshold);
+            let rate = 0.05;
+            for(let c of comms) if(count >= c.threshold) { rate = c.rate; break; }
 
-            if (count >= 50) {
-                currentRate = 0.07;
-                nextTierText = "Max Level (7%)";
-                progress = 100;
-            } else if (count >= 20) {
-                currentRate = 0.05;
-                nextTierText = `Cần ${50 - count} acc để lên 7%`;
-                // Progress within 20-50 range (size 30)
-                progress = ((count - 20) / 30) * 100;
-            }
-
-            const boxClass = state.isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200';
-
+            document.getElementById('viewer-stats-container').classList.remove('hidden');
             document.getElementById('viewer-stats-container').innerHTML = `
-                <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-briefcase text-indigo-500"></i> Hiệu suất cá nhân</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-4 rounded-xl border ${boxClass}">
-                        <div class="text-sm font-bold text-slate-500 mb-1">Cấp độ hiện tại</div>
-                        <div class="text-3xl font-bold text-purple-500">${(currentRate * 100).toFixed(0)}% <span class="text-sm text-slate-500">Hoa hồng</span></div>
-                        <div class="mt-2 w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-purple-500 h-full" style="width: ${progress}%"></div>
-                        </div>
-                        <div class="text-[10px] mt-1 text-slate-500 text-right">${nextTierText}</div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Đã Bán</div>
+                        <div class="text-xl font-bold text-white">${count}</div>
                     </div>
-                    <div class="p-4 rounded-xl border ${boxClass}">
-                        <div class="text-sm font-bold text-slate-500 mb-1">Số lượng đã bán</div>
-                        <div class="text-3xl font-bold text-blue-500">${count} <span class="text-sm text-slate-500">Acc</span></div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Doanh Thu</div>
+                        <div class="text-xl font-bold text-blue-400">${formatVND(rev)}</div>
                     </div>
-                    <div class="p-4 rounded-xl border ${boxClass}">
-                        <div class="text-sm font-bold text-slate-500 mb-1">Tổng tiền nhận được</div>
-                        <div class="text-3xl font-bold text-emerald-500">${totalCommission.toLocaleString()} <span class="text-sm text-slate-500">VNĐ</span></div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Mức HH</div>
+                        <div class="text-xl font-bold text-yellow-400">${(rate*100).toFixed(0)}%</div>
+                    </div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase mb-1">Hoa Hồng</div>
+                        <div class="text-xl font-bold text-emerald-400">${formatVND(rev * rate)}</div>
                     </div>
                 </div>
             `;
         }
 
-        // --- ACCOUNT LIST & SEARCH ---
-        function setFilter(f) {
-            state.filter = f;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                const isActive = btn.dataset.filter === f;
-                btn.className = `filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize transition-all whitespace-nowrap ${isActive ? 'bg-slate-700 text-amber-500 shadow' : 'text-slate-400 hover:text-slate-200'}`;
-            });
-            renderAccounts();
-        }
-
-        function handleSearch(val) {
-            state.searchQuery = val.trim().toLowerCase();
-            renderAccounts();
-        }
-
-        function renderAccounts() {
-            const now = Date.now();
-            
-            // FILTER & SEARCH LOGIC
-            const filtered = state.accounts.filter(acc => {
-                // 1. Status Filter
-                let statusMatch = true;
-                if (state.filter !== 'all') {
-                    statusMatch = getAccStatus(acc) === state.filter;
-                }
-
-                // 2. Search Filter
-                let searchMatch = true;
-                if (state.searchQuery) {
-                    const u = acc.username ? acc.username.toLowerCase() : '';
-                    const n = acc.note ? acc.note.toLowerCase() : '';
-                    searchMatch = u.includes(state.searchQuery) || n.includes(state.searchQuery);
-                }
-
-                return statusMatch && searchMatch;
+        function renderAccountList() {
+            const list = document.getElementById('accounts-list');
+            const filtered = state.accounts.filter(a => {
+                const f = state.filter === 'all' || a.status === state.filter;
+                const s = state.searchQuery === '' || a.username.toLowerCase().includes(state.searchQuery.toLowerCase());
+                return f && s;
             });
 
-            document.getElementById('list-count-badge').textContent = filtered.length;
-            const listEl = document.getElementById('accounts-list');
-
-            if (filtered.length === 0) {
-                const emptyMsg = state.searchQuery ? `Không tìm thấy kết quả cho "${state.searchQuery}"` : 'Trống';
-                listEl.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-60 text-slate-500"><i class="ph ph-magnifying-glass text-6xl mb-4 opacity-50"></i><p>${emptyMsg}</p></div>`;
-                return;
-            }
-
-            listEl.innerHTML = filtered.map((acc, idx) => {
-                // Logic Days
-                let status = acc.status;
-                let effectiveDays = acc.daysFarmed || 0;
-                let timeLabel = '';
-                let progress = 0;
-                const mode = acc.mode || 'manual';
-
-                if (mode === 'auto' && acc.farmingStartedAt && status !== 'sold') {
-                    const elapsed = now - acc.farmingStartedAt;
-                    const d = elapsed / (86400000);
-                    effectiveDays = Math.floor(d);
-                    if (effectiveDays >= 23) {
-                        effectiveDays = 23; status = 'completed'; timeLabel = 'Xong';
-                    } else {
-                        status = 'farming';
-                        const h = Math.floor((elapsed % 86400000)/3600000);
-                        timeLabel = `${h}h`;
-                    }
-                }
-                progress = Math.min((effectiveDays / 23) * 100, 100);
-
-                // UI Helpers
-                const isSold = status === 'sold';
-                const isPending = status === 'pending';
-                let stColor = isSold ? 'text-slate-500 border-slate-700 bg-slate-800' : (status==='completed'?'text-blue-400 border-blue-800 bg-blue-900/30' : (status==='farming'?'text-amber-400 border-amber-800 bg-amber-900/30' : 'text-slate-400 border-slate-700'));
-                let stIcon = isSold ? 'ph-currency-dollar' : (status==='completed'?'ph-check-circle':(status==='farming'?'ph-lightning':'ph-clock'));
-                let stText = isSold ? 'ĐÃ BÁN' : (status==='completed'?'HOÀN THÀNH':(status==='farming'?'ĐANG CÀY':'CHỜ'));
-
-                // Manual Days Controls (Admin Only)
-                let manualControls = '';
-                if (state.currentUser.role === 'admin' && !isSold && !isPending && mode === 'manual') {
-                    manualControls = `
-                        <div class="flex items-center gap-1 bg-slate-800/50 rounded p-0.5 border border-slate-700">
-                            <button onclick="updateAccountDaysManual('${acc.id}', ${effectiveDays - 1})" class="p-1 hover:text-white hover:bg-slate-600 rounded"><i class="ph ph-minus"></i></button>
-                            <span class="text-white min-w-[20px] text-center font-mono text-xs">${effectiveDays}</span>
-                            <button onclick="updateAccountDaysManual('${acc.id}', ${effectiveDays + 1})" class="p-1 hover:text-white hover:bg-slate-600 rounded"><i class="ph ph-plus"></i></button>
+            list.innerHTML = filtered.map(a => `
+                <div class="p-3 bg-slate-800/30 border border-slate-800 rounded-xl flex justify-between items-center group">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-sm text-white">${a.username}</span>
+                            <span class="text-[8px] font-bold px-1 rounded border ${a.status==='completed'?'border-emerald-500 text-emerald-500':'border-slate-500 text-slate-500'} uppercase">${a.status}</span>
                         </div>
-                    `;
-                } else if (!isSold && !isPending) {
-                    // Auto or Viewer view
-                    manualControls = `<div class="flex items-center gap-1.5 ${mode==='auto'?'text-blue-500 animate-pulse':'text-slate-500'}"><i class="ph ph-clock"></i><span>${effectiveDays} ngày ${timeLabel ? `(${timeLabel})` : ''}</span></div>`;
-                }
-
-                return `
-                <div class="relative rounded-xl p-4 shadow-sm border bg-slate-900 border-slate-800 hover:border-slate-700 transition-all ${isSold ? 'opacity-60 grayscale' : ''}">
-                    <div class="flex flex-col md:flex-row justify-between gap-4">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${stColor}"><i class="ph ${stIcon}"></i> ${stText}</span>
-                                <span class="text-xs font-bold text-slate-500">#${acc.id.slice(-4)}</span>
-                            </div>
-                            <div class="space-y-1 mb-2">
-                                <div class="flex items-center gap-2 group/field cursor-pointer" onclick="copyToClipboard('${acc.username}', 'Username')">
-                                    <h3 class="font-mono text-sm md:text-base font-bold truncate text-slate-200 max-w-[200px]">${acc.username}</h3>
-                                    <i class="ph ph-copy text-slate-500 text-xs"></i>
-                                </div>
-                                <div class="flex items-center gap-2 group/field cursor-pointer" onclick="copyToClipboard('${acc.password}', 'Password')">
-                                    <p class="font-mono text-xs truncate text-slate-500">Pass: ${acc.password}</p>
-                                    <i class="ph ph-copy text-slate-600 text-xs"></i>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 mt-1 group/note">
-                                ${acc.note ? `<div class="text-xs px-2 py-1 rounded inline-block bg-slate-800 text-slate-400">${acc.note}</div>` : `<div class="text-xs px-2 py-1 rounded inline-block bg-slate-800/50 text-slate-600 italic">No note</div>`}
-                                ${!isSold ? `<button onclick="editNote('${acc.id}', '${acc.note || ''}')" class="text-slate-600 hover:text-indigo-400 p-0.5"><i class="ph ph-pencil-simple text-xs"></i></button>` : ''}
-                            </div>
-                        </div>
-                        <div class="flex flex-col justify-between items-end gap-2">
-                            <div class="flex items-center justify-end gap-2 group/price">
-                                <span class="text-lg font-bold text-emerald-500">${acc.price.toLocaleString()} đ</span>
-                                ${!isSold ? `<button onclick="editPrice('${acc.id}', ${acc.price})" class="opacity-0 group-hover/price:opacity-100 p-1 text-slate-500 hover:text-indigo-400 transition-opacity"><i class="ph ph-pencil-simple"></i></button>` : ''}
-                            </div>
-                            ${!isSold ? `
-                                <button onclick="toggleAccountMode('${acc.id}', '${mode}')" class="text-[10px] px-2 py-1 rounded border ${mode==='auto'?'bg-blue-900/20 text-blue-400 border-blue-800':'bg-slate-800 text-slate-400 border-slate-700'}">
-                                    ${mode==='auto'?'AUTO':'MANUAL'}
-                                </button>
-                                <div class="w-[140px] text-right">
-                                    <div class="flex justify-end text-[10px] font-bold text-slate-500 mb-1 gap-2">
-                                        ${manualControls}
-                                        <span class="ml-1">${Math.round(progress)}%</span>
-                                    </div>
-                                    <div class="w-full h-1.5 rounded-full bg-slate-800"><div class="h-full rounded-full bg-blue-500 transition-all" style="width:${progress}%"></div></div>
-                                </div>
-                            ` : ''}
-                        </div>
+                        <div class="text-[10px] text-slate-500 font-mono mt-1">${a.status==='sold'?'***':a.password} | ${formatVND(a.price)}</div>
                     </div>
-                    <div class="mt-4 pt-3 border-t border-slate-800 flex gap-2">
-                        <button onclick="copyAndStart('${acc.id}')" class="flex-1 py-2 px-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 ${isPending ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-800 text-slate-400'}">
-                            <i class="ph ${isPending ? 'ph-play-circle' : 'ph-copy'}"></i> ${isPending ? 'Copy & Start' : 'Copy'}
-                        </button>
-                        ${!isSold ? `
-                            <button onclick="requestSellSingle('${acc.id}')" class="p-2 rounded-lg bg-emerald-900/30 text-emerald-400"><i class="ph ph-currency-dollar"></i></button>
-                        ` : ''}
-                        <button onclick="requestDelete('${acc.id}')" class="p-2 rounded-lg bg-rose-900/30 text-rose-400"><i class="ph ph-trash"></i></button>
+                    <div class="flex gap-1">
+                        ${a.status !== 'sold' ? `
+                            <button onclick="updateAccStatus('${a.id}','completed')" class="p-1.5 rounded bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white"><i class="ph ph-check"></i></button>
+                            <button onclick="deleteAcc('${a.id}')" class="p-1.5 rounded bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white"><i class="ph ph-trash"></i></button>
+                        ` : '<span class="text-[10px] text-slate-600 italic">Sold</span>'}
                     </div>
                 </div>
-                `;
-            }).join('');
+            `).join('');
         }
 
-        // --- ACCOUNT ACTIONS (Using Firebase) ---
+        // ACTIONS
         async function handleAddAccount(e) {
             e.preventDefault();
-            const u = document.getElementById('input-username').value;
-            const p = document.getElementById('input-password').value;
-            const price = document.getElementById('input-price').value;
-            const note = document.getElementById('input-note').value;
-            if (!u || !p) return;
-
-            try {
-                await window.addDoc(window.collection(window.db, "accounts"), {
-                    username: u, password: p, price: Number(price) || 0, note,
-                    daysFarmed: 0, status: 'pending', mode: 'manual', farmingStartedAt: null, soldBy: null, createdAt: Date.now()
-                });
-                document.getElementById('add-acc-form').reset();
-                showToast('Đã thêm Acc');
-            } catch (err) { console.error(err); showToast('Lỗi thêm Acc', 'error'); }
-        }
-
-        async function toggleAccountMode(id, currentMode) {
-            const acc = state.accounts.find(a => a.id === id);
-            const newMode = currentMode === 'manual' ? 'auto' : 'manual';
-            let updates = { mode: newMode };
-            
-            if (newMode === 'auto') {
-                const ms = (acc.daysFarmed || 0) * 86400000;
-                updates.farmingStartedAt = Date.now() - ms;
-                if (acc.status === 'pending') { updates.status = 'farming'; updates.farmingStartedAt = Date.now(); }
-            } else {
-                if (acc.farmingStartedAt) {
-                    const d = (Date.now() - acc.farmingStartedAt) / 86400000;
-                    updates.daysFarmed = Math.min(23, Math.floor(d));
-                }
-            }
-            await window.updateDoc(window.doc(window.db, "accounts", id), updates);
-        }
-
-        async function updateAccountDaysManual(id, newDays) {
-            const validDays = Math.max(0, Math.min(23, newDays));
-            let status = 'farming';
-            if (validDays >= 23) status = 'completed';
-            if (validDays === 0) status = 'pending';
-            
-            await window.updateDoc(window.doc(window.db, "accounts", id), {
-                daysFarmed: validDays,
-                status: status
-            });
-        }
-        
-        // --- PRICE EDITING ---
-        function editPrice(id, oldPrice) {
-            const modal = document.getElementById('modal-content');
-            modal.innerHTML = `
-                <h3 class="font-bold text-lg mb-4">Cập nhật giá</h3>
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-400 mb-1">Giá mới (VNĐ)</label>
-                    <input type="number" id="edit-price-input" value="${oldPrice}" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:border-amber-500 outline-none text-white font-bold">
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="closeModal()" class="flex-1 py-2 rounded bg-slate-700 text-white font-bold">Hủy</button>
-                    <button onclick="savePrice('${id}')" class="flex-1 py-2 rounded bg-emerald-600 text-white font-bold">Lưu</button>
-                </div>
-            `;
-            document.getElementById('modal-overlay').classList.remove('hidden');
-            document.getElementById('edit-price-input').focus();
-        }
-
-        async function savePrice(id) {
-            const newPrice = Number(document.getElementById('edit-price-input').value);
-            if (isNaN(newPrice) || newPrice < 0) return alert("Giá không hợp lệ");
-            
-            try {
-                await window.updateDoc(window.doc(window.db, "accounts", id), { price: newPrice });
-                showToast('Đã cập nhật giá');
-                closeModal();
-            } catch (e) {
-                console.error(e);
-                showToast('Lỗi khi cập nhật', 'error');
-            }
-        }
-
-        // --- NOTE EDITING ---
-        function editNote(id, oldNote) {
-            const modal = document.getElementById('modal-content');
-            modal.innerHTML = `
-                <h3 class="font-bold text-lg mb-4">Cập nhật Ghi chú</h3>
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-400 mb-1">Nội dung</label>
-                    <input type="text" id="edit-note-input" value="${oldNote}" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:border-amber-500 outline-none text-white font-bold" placeholder="Nhập ghi chú...">
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="closeModal()" class="flex-1 py-2 rounded bg-slate-700 text-white font-bold">Hủy</button>
-                    <button onclick="saveNote('${id}')" class="flex-1 py-2 rounded bg-emerald-600 text-white font-bold">Lưu</button>
-                </div>
-            `;
-            document.getElementById('modal-overlay').classList.remove('hidden');
-            document.getElementById('edit-note-input').focus();
-        }
-
-        async function saveNote(id) {
-            const newNote = document.getElementById('edit-note-input').value;
-            try {
-                await window.updateDoc(window.doc(window.db, "accounts", id), { note: newNote });
-                showToast('Đã cập nhật ghi chú');
-                closeModal();
-            } catch (e) {
-                console.error(e);
-                showToast('Lỗi khi cập nhật', 'error');
-            }
-        }
-
-        async function copyAndStart(id) {
-            const acc = state.accounts.find(a => a.id === id);
-            copyToClipboard(`${acc.username}|${acc.password}`, "User|Pass");
-            if (acc.status === 'pending') {
-                await window.updateDoc(window.doc(window.db, "accounts", id), {
-                    status: 'farming', daysFarmed: 1, mode: 'auto', farmingStartedAt: Date.now()
-                });
-            }
-        }
-
-        function requestDelete(id) {
-            showConfirmModal('Xác nhận xóa', 'Bạn chắc chắn muốn xóa account này?', async () => {
-                await window.deleteDoc(window.doc(window.db, "accounts", id));
-                showToast('Đã xóa Acc', 'error');
-                closeModal();
-            });
-        }
-        
-        // --- SELLING LOGIC (Corrected Select Seller) ---
-        function requestSellSingle(id) {
-            showConfirmModal('Bán Account', 'Chọn người bán tính doanh thu:', async () => {
-                const sellerId = document.getElementById('seller-select').value;
-                await performSellSingle(id, sellerId);
-                closeModal();
-            }, true);
-        }
-
-        async function performSellSingle(accId, sellerId) {
-            const acc = state.accounts.find(a => a.id === accId);
-            if (!acc) return;
-
-            // Logic Commission Update
-            const sellerHistory = state.history.filter(h => h.soldBy === sellerId);
-            const isViewer = state.users.find(u => u.id === sellerId)?.role === 'viewer';
-            let comm = 0;
-            if (isViewer) {
-                const count = sellerHistory.length;
-                const rate = getCommissionRate(count);
-                comm = acc.price * rate;
-            }
-
-            // Calc final days
-            let finalDays = acc.daysFarmed;
-            if (acc.mode === 'auto' && acc.farmingStartedAt) {
-                finalDays = Math.floor((Date.now() - acc.farmingStartedAt) / 86400000);
-            }
-
-            // Update DB
-            const batch = {
-                ...acc, daysFarmed: Math.min(23, finalDays),
-                soldAt: Date.now(), soldMethod: 'manual', soldBy: sellerId, commission: comm
+            const data = {
+                username: document.getElementById('input-username').value,
+                password: document.getElementById('input-password').value,
+                price: parseInt(document.getElementById('input-price').value) || 0,
+                note: document.getElementById('input-note').value,
+                status: 'pending', createdAt: Date.now()
             };
-            
-            // Add History & Update Account parallel
-            await window.addDoc(window.collection(window.db, "history"), batch);
-            await window.updateDoc(window.doc(window.db, "accounts", accId), { status: 'sold', soldBy: sellerId });
-            
-            showSoldModal('single', 1, acc.price, acc);
+            await window.addDoc(window.collection(window.db, "accounts"), data);
+            document.getElementById('add-acc-form').reset();
+            showToast('Đã thêm thành công!');
         }
 
-        function requestSellRandom() {
-            const qty = parseInt(document.getElementById('sell-qty-input').value) || 1;
-            const getD = (a) => a.mode === 'auto' && a.farmingStartedAt ? Math.floor((Date.now()-a.farmingStartedAt)/86400000) : a.daysFarmed;
-            const ready = state.accounts.filter(a => (a.status === 'completed' || (a.status === 'farming' && getD(a) >= 23)) && a.status !== 'sold');
+        async function updateAccStatus(id, s) { await window.updateDoc(window.doc(window.db, "accounts", id), {status:s}); }
+        async function deleteAcc(id) { if(confirm('Xóa?')) await window.deleteDoc(window.doc(window.db,"accounts",id)); }
 
-            if (ready.length === 0) return showToast('Chưa có acc đủ ngày!', 'error');
-
-            const count = Math.min(qty, ready.length);
-            showConfirmModal(`Bán Random ${count} Acc`, `Tìm thấy ${ready.length} acc ok. Chọn người bán:`, async () => {
-                const sellerId = document.getElementById('seller-select').value;
-                await performSellRandom(ready, count, sellerId);
-                closeModal();
-            }, true);
-        }
-
-        async function performSellRandom(readyAccs, count, sellerId) {
-            // Shuffle
-            const selected = [...readyAccs].sort(()=>0.5-Math.random()).slice(0, count);
-            const sellerHistLen = state.history.filter(h => h.soldBy === sellerId).length;
-            const isViewer = state.users.find(u => u.id === sellerId)?.role === 'viewer';
-
-            let revenue = 0;
-            // Process Loop
-            for (let i = 0; i < selected.length; i++) {
-                const acc = selected[i];
-                let comm = 0;
-                if (isViewer) {
-                    const currentCount = sellerHistLen + i;
-                    const rate = getCommissionRate(currentCount);
-                    comm = acc.price * rate;
-                }
-                
-                let finalDays = acc.daysFarmed;
-                if (acc.mode === 'auto' && acc.farmingStartedAt) finalDays = Math.floor((Date.now() - acc.farmingStartedAt)/86400000);
-
-                const hItem = {
-                    ...acc, daysFarmed: Math.min(23, finalDays),
-                    soldAt: Date.now(), soldMethod: 'random', soldBy: sellerId, commission: comm
-                };
-                
-                await window.addDoc(window.collection(window.db, "history"), hItem);
-                await window.updateDoc(window.doc(window.db, "accounts", acc.id), { status: 'sold', soldBy: sellerId });
-                revenue += acc.price;
-            }
-            showSoldModal('batch', count, revenue);
-        }
-
-        // --- GLOBAL WIPE SYSTEM ---
-        function showWipeSystemModal() {
-             showConfirmModal('Wipe System Data', 'Hành động này sẽ xóa TOÀN BỘ Accounts và History trong hệ thống. Dữ liệu sẽ không thể khôi phục. Tiếp tục?', async () => {
-                await performWipeSystem();
-                closeModal();
-            });
-        }
-
-        async function performWipeSystem() {
-            try {
-                showToast('Đang xóa dữ liệu...', 'success');
-                // Batch delete all accounts
-                const accSnap = await window.getDocs(window.collection(window.db, "accounts"));
-                const accBatch = window.writeBatch(window.db);
-                accSnap.forEach(doc => accBatch.delete(doc.ref));
-                await accBatch.commit();
-
-                // Batch delete all history
-                const histSnap = await window.getDocs(window.collection(window.db, "history"));
-                const histBatch = window.writeBatch(window.db);
-                histSnap.forEach(doc => histBatch.delete(doc.ref));
-                await histBatch.commit();
-
-                showToast('Đã xóa toàn bộ dữ liệu hệ thống!', 'success');
-            } catch (e) {
-                console.error(e);
-                showToast('Lỗi khi xóa dữ liệu', 'error');
-            }
-        }
-
-        // --- USER MANAGEMENT & EDITING ---
+        // MANAGE USERS
         function showUserManageModal() {
-            const currentId = state.currentUser.id;
-            
-            // Filter: If I am NOT 'administrator', I cannot see 'administrator'
-            const userHtml = state.users
-                .filter(u => currentId === 'administrator' || u.id !== 'administrator')
-                .map(u => {
-                    const isSuperAdmin = u.id === 'administrator';
-                    
-                    // Calculate Revenue for Viewer
-                    let revHtml = '';
-                    if (u.role === 'viewer') {
-                        const rev = state.history.filter(h => h.soldBy === u.id).reduce((s, h) => s + h.price, 0);
-                        revHtml = `<div class="mt-2 pt-2 border-t border-slate-700 flex justify-between text-xs text-emerald-400 font-bold"><span>Doanh thu:</span><span>${rev.toLocaleString()} đ</span></div>`;
-                    }
-
-                    return `
-                    <div class="p-3 rounded-xl border border-slate-700 bg-slate-800 mb-3">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="font-bold flex items-center gap-2">
-                                    ${u.name} 
-                                    ${isSuperAdmin ? '<i class="ph ph-crown text-amber-400"></i>' : ''}
-                                    <span class="text-xs text-slate-500 font-normal">(${u.role})</span>
-                                </div>
-                                <div class="text-xs font-mono text-slate-400">User: ${u.username}</div>
-                            </div>
-                            <div class="flex gap-2">
-                                 <button onclick="editUser('${u.id}')" class="text-indigo-400 p-1 bg-indigo-900/30 rounded"><i class="ph ph-pencil-simple"></i></button>
-                                 <button onclick="wipeUserStats('${u.id}')" class="text-amber-400 p-1 bg-amber-900/30 rounded" title="Wipe Stats & Sold Accounts"><i class="ph ph-eraser"></i></button>
-                                 ${!isSuperAdmin ? `<button onclick="deleteUser('${u.id}')" class="text-rose-500 p-1 bg-rose-900/20 rounded" title="Xóa User"><i class="ph ph-user-minus"></i></button>` : ''}
-                            </div>
-                        </div>
-                        ${revHtml}
-                    </div>`;
-                }).join('');
-
-            const modal = document.getElementById('modal-content');
-            modal.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-lg">Quản lý User</h3>
-                    <button onclick="closeModal()"><i class="ph ph-x text-xl"></i></button>
+            const html = `
+                <div class="h-full flex flex-col">
+                    <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                        <h3 class="font-bold text-purple-400">Quản lý Users & Số dư</h3>
+                        <button onclick="closeLargeModal()" class="text-slate-500 hover:text-white">X</button>
+                    </div>
+                    <div class="p-4 border-b border-slate-800 bg-slate-800/20">
+                        <form onsubmit="createUser(event)" class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                            <input id="u-name" placeholder="Tên" class="p-2 bg-slate-800 border border-slate-700 rounded text-xs" required>
+                            <input id="u-user" placeholder="User" class="p-2 bg-slate-800 border border-slate-700 rounded text-xs" required>
+                            <input id="u-pass" placeholder="Pass" class="p-2 bg-slate-800 border border-slate-700 rounded text-xs" required>
+                            <select id="u-role" class="p-2 bg-slate-800 border border-slate-700 rounded text-xs">
+                                <option value="customer">Khách</option>
+                                <option value="viewer">Viewer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                            <button class="bg-purple-600 rounded text-xs font-bold">Thêm User</button>
+                        </form>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4">
+                        <table class="w-full text-[12px] text-left">
+                            <thead class="text-slate-500 uppercase"><tr><th class="pb-2">User</th><th>Role</th><th class="text-right">Số Dư</th><th class="text-right">Hành động</th></tr></thead>
+                            <tbody class="divide-y divide-slate-800">
+                                ${state.users.map(u => `
+                                    <tr>
+                                        <td class="py-3 font-bold text-white">${u.name}<br><span class="font-normal text-slate-500 text-[10px]">${u.username} | ${u.password}</span></td>
+                                        <td class="uppercase text-slate-400 font-bold">${u.role}</td>
+                                        <td class="text-right font-mono text-emerald-400 font-bold">${formatVND(u.balance||0)}</td>
+                                        <td class="text-right">
+                                            <button onclick="topUp('${u.id}')" class="px-2 py-1 bg-emerald-600/20 text-emerald-500 rounded font-bold">Nạp</button>
+                                            <button onclick="deleteUser('${u.id}')" class="px-2 py-1 bg-rose-600/20 text-rose-500 rounded font-bold ml-1">Xóa</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="max-h-[400px] overflow-y-auto mb-4">${userHtml}</div>
-                <button onclick="addNewUserPrompt()" class="w-full py-2 rounded-lg bg-indigo-600 text-white font-bold text-sm">Thêm User Mới</button>
             `;
-            document.getElementById('modal-overlay').classList.remove('hidden');
-        }
-        
-        // Delete User Function (Combines wipe + delete doc)
-        function deleteUser(uid) {
-            if(uid === 'administrator') return alert("Không thể xóa Super Admin!");
-            
-            showConfirmModal('Xóa User', 'Hành động này sẽ xóa User và TOÀN BỘ dữ liệu (lịch sử, acc đã bán) của họ. Không thể hoàn tác!', async () => {
-                // Reuse wipe logic first
-                await performWipeUserStats(uid); 
-                // Then delete user doc
-                await window.deleteDoc(window.doc(window.db, "users", uid));
-                
-                showToast('Đã xóa User thành công');
-                showUserManageModal(); // Refresh modal
-                closeModal(); // Close confirm modal
-            });
+            openLargeModal(html);
         }
 
-        // Wipe User Stats AND Delete Sold Accounts
-        function wipeUserStats(uid) {
-             showConfirmModal('Xóa Dữ Liệu User', 'Xóa lịch sử bán hàng và TOÀN BỘ account đã bán bởi user này? Hành động không thể hoàn tác.', async () => {
-                await performWipeUserStats(uid);
-                showToast('Đã xóa dữ liệu user', 'success');
-                showUserManageModal(); // Refresh modal
-                closeModal(); // Close confirm modal
-            });
-        }
-        
-        async function performWipeUserStats(uid) {
-             // 1. Delete History
-            const qHist = window.query(window.collection(window.db, "history"), window.where("soldBy", "==", uid));
-            const snapHist = await window.getDocs(qHist);
-            const batchHist = window.writeBatch(window.db);
-            snapHist.forEach(d => batchHist.delete(d.ref));
-            await batchHist.commit();
-
-            // 2. Delete Sold Accounts
-            const qAcc = window.query(window.collection(window.db, "accounts"), window.where("soldBy", "==", uid), window.where("status", "==", "sold"));
-            const snapAcc = await window.getDocs(qAcc);
-            const batchAcc = window.writeBatch(window.db);
-            snapAcc.forEach(d => batchAcc.delete(d.ref));
-            await batchAcc.commit();
-        }
-
-        // Edit User (Admin)
-        function editUser(uid) {
-            const u = state.users.find(x => x.id === uid);
-            const modal = document.getElementById('modal-content');
-            modal.innerHTML = `
-                <h3 class="font-bold text-lg mb-4">Sửa User: ${u.name}</h3>
-                <div class="space-y-3">
-                    <div><label class="text-xs text-slate-400">Tên hiển thị</label><input id="edit-name" value="${u.name}" class="w-full p-2 rounded bg-slate-800 border border-slate-700"></div>
-                    <div><label class="text-xs text-slate-400">Username</label><input id="edit-user" value="${u.username}" class="w-full p-2 rounded bg-slate-800 border border-slate-700"></div>
-                    <div><label class="text-xs text-slate-400">Password</label><input id="edit-pass" value="${u.password}" class="w-full p-2 rounded bg-slate-800 border border-slate-700"></div>
-                </div>
-                <button onclick="saveUserEdit('${uid}')" class="w-full mt-4 py-2 rounded-lg bg-green-600 text-white font-bold">Lưu Thay Đổi</button>
-            `;
-        }
-
-        async function saveUserEdit(uid) {
-            const name = document.getElementById('edit-name').value;
-            const username = document.getElementById('edit-user').value;
-            const password = document.getElementById('edit-pass').value;
-            await window.updateDoc(window.doc(window.db, "users", uid), { name, username, password });
-            showToast('Đã cập nhật User');
-            showUserManageModal(); // Back to list
-        }
-
-        // Viewer Settings (Name & Pass) - UPDATED
-        function showViewerSettingsModal() {
-            const u = state.currentUser;
-            const modal = document.getElementById('modal-content');
-            modal.innerHTML = `
-                <h3 class="font-bold text-lg mb-4">Cài Đặt Cá Nhân</h3>
-                <div class="space-y-3">
-                     <div><label class="text-xs text-slate-400">Tên Hiển Thị</label><input id="my-name" type="text" value="${u.name}" class="w-full p-2 rounded bg-slate-800 border border-slate-700"></div>
-                    <div><label class="text-xs text-slate-400">Password Mới</label><input id="new-pass" type="text" value="${u.password}" class="w-full p-2 rounded bg-slate-800 border border-slate-700"></div>
-                </div>
-                <button onclick="saveMyProfile('${u.id}')" class="w-full mt-4 py-2 rounded-lg bg-green-600 text-white font-bold">Lưu Thay Đổi</button>
-                <button onclick="closeModal()" class="w-full mt-2 py-2 rounded-lg bg-slate-700 text-white font-bold">Hủy</button>
-            `;
-            document.getElementById('modal-overlay').classList.remove('hidden');
-        }
-
-        async function saveMyProfile(uid) {
-            const name = document.getElementById('my-name').value;
-            const password = document.getElementById('new-pass').value;
-            await window.updateDoc(window.doc(window.db, "users", uid), { name, password });
-            showToast('Đã cập nhật thông tin');
-            closeModal();
-        }
-
-        async function addNewUserPrompt() {
-            const id = prompt("Nhập ID (ví dụ: nam_sale):");
-            if(!id) return;
-            // Check exist
-            if(state.users.find(u=>u.id===id)) return alert("ID đã tồn tại");
-            
+        async function createUser(e) {
+            e.preventDefault();
+            const id = document.getElementById('u-user').value.trim().toLowerCase();
             await window.setDoc(window.doc(window.db, "users", id), {
-                id, username: id, password: '123', name: id, role: 'viewer'
+                id, username: id, 
+                name: document.getElementById('u-name').value,
+                password: document.getElementById('u-pass').value,
+                role: document.getElementById('u-role').value,
+                balance: 0
             });
-            showToast("Đã thêm user mới (Pass: 123)");
+            showToast('Đã tạo user!');
             showUserManageModal();
         }
 
-        // --- UTILS & MODALS ---
-        function showConfirmModal(title, msg, onConfirm, showSeller=false) {
-            let sellerHtml = '';
-            if (showSeller) {
-                const opts = state.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-                sellerHtml = `<div class="mb-4 text-left"><label class="text-xs font-bold text-slate-400">Người bán:</label><select id="seller-select" class="w-full p-2 rounded bg-slate-800 border-slate-700">${opts}</select></div>`;
+        async function topUp(id) {
+            const v = prompt("Nhập số tiền nạp (+ hoặc -):", "0");
+            if(v === null) return;
+            const amount = parseInt(v);
+            if(isNaN(amount)) return alert("Lỗi!");
+            const u = state.users.find(x => x.id === id);
+            await window.updateDoc(window.doc(window.db, "users", id), { balance: (u.balance||0) + amount });
+            showToast('Đã nạp tiền!');
+            showUserManageModal();
+        }
+
+        async function deleteUser(id) {
+            if(id === 'admin') return alert("Không thể xóa Admin!");
+            if(confirm('Xóa?')) {
+                await window.deleteDoc(window.doc(window.db, "users", id));
+                showUserManageModal();
             }
-            document.getElementById('modal-content').innerHTML = `
-                <h3 class="font-bold text-xl mb-2 text-center">${title}</h3><p class="text-center text-slate-400 mb-4">${msg}</p>
-                ${sellerHtml}
-                <div class="flex gap-2"><button onclick="closeModal()" class="flex-1 py-2 rounded bg-slate-700">Hủy</button><button id="confirm-btn" class="flex-1 py-2 rounded bg-amber-600 text-white font-bold">OK</button></div>
-            `;
-            document.getElementById('confirm-btn').onclick = onConfirm;
-            document.getElementById('modal-overlay').classList.remove('hidden');
         }
 
-        function showSoldModal(type, count, rev, acc=null) {
-             let body = type === 'batch' 
-                ? `<div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center"><p class="text-2xl font-bold text-emerald-500">+${rev.toLocaleString()} đ</p></div>`
-                : `<div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-left">
-                     <button onclick="copyToClipboard('${acc.username}|${acc.password}','User|Pass')" class="w-full p-2 bg-indigo-900/30 text-indigo-400 font-mono text-sm truncate mb-2">${acc.username}|${acc.password}</button>
-                     <div class="flex justify-between border-t border-slate-800 pt-2"><span class="text-xs">Giá bán</span><span class="font-bold text-emerald-500">${rev.toLocaleString()} đ</span></div>
-                   </div>`;
-
-             document.getElementById('modal-content').innerHTML = `
-                <div class="text-center mb-4"><div class="inline-flex p-3 rounded-full bg-green-900/30 text-green-500 mb-2"><i class="ph ph-check-circle text-3xl"></i></div><h3 class="text-xl font-bold">Thành Công!</h3></div>
-                ${body}
-                <button onclick="closeModal()" class="absolute top-4 right-4"><i class="ph ph-x"></i></button>
-             `;
-             document.getElementById('modal-overlay').classList.remove('hidden');
-        }
-
-        function showHistoryModal() {
-            const html = state.history.map(h => `
-                <div class="p-3 rounded-xl border border-slate-700 bg-slate-800 mb-2 flex justify-between items-center">
-                    <div>
-                        <div class="flex items-center gap-2"><span class="text-[10px] bg-slate-700 px-1 rounded uppercase">${h.soldMethod}</span><span class="font-bold text-sm text-slate-300">${h.username}</span></div>
-                        <div class="text-xs text-slate-500">Seller: ${state.users.find(u=>u.id===h.soldBy)?.name || h.soldBy}</div>
-                    </div>
-                    <div class="text-right"><div class="font-bold text-emerald-500">+${h.price.toLocaleString()}</div><div class="text-[10px] text-slate-500">${new Date(h.soldAt).toLocaleDateString()}</div></div>
-                </div>
-            `).join('');
-            document.getElementById('large-modal-content').innerHTML = `
-                <div class="p-4 border-b border-slate-700 flex justify-between"><h3 class="font-bold">Lịch Sử</h3><button onclick="document.getElementById('large-modal-overlay').classList.add('hidden')"><i class="ph ph-x text-xl"></i></button></div>
-                <div class="p-4 overflow-y-auto h-full">${html || '<p class="text-center text-slate-500">Trống</p>'}</div>
-            `;
-            document.getElementById('large-modal-overlay').classList.remove('hidden');
-        }
-
-        function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
-        
-        function showToast(msg, type='success') {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-message').textContent = msg;
-            
-            // Icon
-            const icon = document.getElementById('toast-icon');
-            icon.className = type === 'error' ? 'ph ph-warning-circle text-4xl mb-1 text-rose-300' : 'ph ph-check-circle text-4xl mb-1 text-emerald-300';
-            
-            // Background
-            t.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-2 font-bold text-white transition-all duration-300 min-w-[240px] text-center border ${type==='error'?'bg-rose-900/90 border-rose-700 shadow-rose-900/50':'bg-emerald-900/90 border-emerald-700 shadow-emerald-900/50'} backdrop-blur-md opacity-100 scale-100 visible`;
-            
-            setTimeout(() => {
-                t.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-2 font-bold text-white transition-all duration-300 min-w-[240px] text-center opacity-0 scale-90 invisible`;
-            }, 2500);
-        }
-        
-        function copyToClipboard(txt, lbl) {
-            navigator.clipboard.writeText(txt).then(() => showToast(`Đã copy ${lbl}`));
-        }
-        function getAccStatus(acc) {
-            if(acc.status==='sold') return 'sold';
-            if(acc.status==='completed') return 'completed';
-            if(acc.status==='farming' && acc.mode==='auto' && acc.farmingStartedAt) {
-                if((Date.now()-acc.farmingStartedAt)/86400000 >= 23) return 'completed';
-            }
-            return acc.status;
-        }
-        function generateHotmail() {
-            const u = Math.random().toString(36).substring(2,10);
-            const p = Math.random().toString(36).substring(2,12).toUpperCase() + '!';
-            document.getElementById('gen-email').textContent = u + '@hotmail.com';
-            document.getElementById('gen-pass').textContent = p;
-            document.getElementById('btn-fill-form').disabled = false;
-            document.getElementById('btn-fill-form').classList.remove('opacity-50','cursor-not-allowed');
-        }
-        function fillForm() {
-            document.getElementById('input-username').value = document.getElementById('gen-email').textContent;
-            document.getElementById('input-password').value = document.getElementById('gen-pass').textContent;
-        }
-        function adjustSellQty(v) {
-            const el = document.getElementById('sell-qty-input');
-            el.value = Math.max(1, parseInt(el.value)+v);
+        // UTILS
+        function showToast(m, t='success') {
+            const el = document.getElementById('toast');
+            el.textContent = m;
+            el.className = `fixed top-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-2xl text-white font-bold transition-all duration-300 opacity-100 translate-y-0 ${t==='success'?'bg-emerald-600':'bg-rose-600'}`;
+            setTimeout(() => { el.classList.add('opacity-0', '-translate-y-4'); }, 3000);
         }
         function toggleTheme() {
             state.isDark = !state.isDark;
             document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', state.isDark ? 'dark' : 'light');
-            updateThemeIcon();
-            renderApp();
-        }
-        function updateThemeIcon() {
             document.getElementById('theme-icon').className = state.isDark ? 'ph ph-sun text-xl' : 'ph ph-moon text-xl';
         }
+        function openLargeModal(h) { document.getElementById('large-modal-content').innerHTML = h; document.getElementById('large-modal-overlay').classList.remove('hidden'); }
+        function closeLargeModal() { document.getElementById('large-modal-overlay').classList.add('hidden'); }
+        function handleSearch(v) { state.searchQuery = v; renderAccountList(); }
+        function setFilter(f) {
+            state.filter = f;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.toggle('text-amber-500', b.dataset.filter === f);
+                b.classList.toggle('bg-slate-700', b.dataset.filter === f);
+            });
+            renderAccountList();
+        }
+        function adjustSellQty(d) {
+            const i = document.getElementById('sell-qty-input');
+            let v = parseInt(i.value) + d;
+            if(v < 1) v = 1; i.value = v;
+        }
+
+        async function requestSellRandom() {
+            const q = parseInt(document.getElementById('sell-qty-input').value);
+            const ready = state.accounts.filter(a => a.status === 'completed');
+            if(ready.length < q) return showToast('Không đủ acc!', 'error');
+
+            const targets = ready.sort(()=>0.5-Math.random()).slice(0, q);
+            const batch = window.writeBatch(window.db);
+            targets.forEach(a => {
+                batch.update(window.doc(window.db, "accounts", a.id), { status:'sold', soldAt:Date.now(), soldBy:state.currentUser.name });
+                batch.set(window.doc(window.collection(window.db, "history")), {
+                    accountId: a.id, username: a.username, password: a.password, price: a.price, soldAt: Date.now(), soldBy: state.currentUser.name
+                });
+            });
+            await batch.commit();
+            
+            const listStr = targets.map(a => `${a.username}|${a.password}`).join('\n');
+            openLargeModal(`
+                <div class="p-6 h-full flex flex-col">
+                    <h3 class="font-bold text-xl mb-4">Đã xuất ${q} Account</h3>
+                    <textarea class="flex-1 bg-slate-950 p-4 rounded-xl font-mono text-sm border border-slate-800 text-emerald-400" readonly>${listStr}</textarea>
+                    <button onclick="closeLargeModal()" class="mt-4 w-full py-3 bg-slate-800 rounded-xl font-bold">XONG</button>
+                </div>
+            `);
+        }
+
+        function generateHotmail() {
+            const r = Math.random().toString(36).substring(2, 10);
+            document.getElementById('input-username').value = r + "@hotmail.com";
+            document.getElementById('input-password').value = "Bear" + Math.floor(Math.random()*9000+1000);
+        }
+
+        async function showSystemSettings() {
+            const s = state.settings;
+            const html = `
+                <div class="p-6">
+                    <h3 class="font-bold text-xl mb-6">Cài đặt hệ thống</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Giá bán cho Khách (Customer)</label>
+                            <input id="set-gprice" type="number" value="${s.guestPrice}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl">
+                        </div>
+                        <div class="flex justify-end gap-2 mt-8">
+                            <button onclick="closeLargeModal()" class="px-6 py-2">Hủy</button>
+                            <button onclick="saveSettings()" class="px-6 py-2 bg-amber-600 rounded-xl font-bold text-slate-950">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            openLargeModal(html);
+        }
+
+        async function saveSettings() {
+            const guestPrice = parseInt(document.getElementById('set-gprice').value);
+            await window.setDoc(window.doc(window.db, "system", "settings"), { guestPrice, commissions: state.settings.commissions });
+            showToast('Đã lưu!');
+            closeLargeModal();
+        }
+
+        function showHistoryModal() {
+            const html = `
+                <div class="h-full flex flex-col">
+                    <div class="p-4 border-b border-slate-800 flex justify-between items-center"><h3 class="font-bold">Toàn bộ giao dịch</h3><button onclick="closeLargeModal()">X</button></div>
+                    <div class="flex-1 overflow-auto p-4">
+                        <table class="w-full text-[10px] text-left">
+                            <thead class="text-slate-500"><tr><th>User</th><th>Giá</th><th>Bởi</th><th>Lúc</th></tr></thead>
+                            <tbody class="divide-y divide-slate-800">
+                                ${state.history.map(h => `<tr><td class="py-2">${h.username}</td><td>${formatVND(h.price)}</td><td>${h.soldBy}</td><td>${formatDate(h.soldAt)}</td></tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            openLargeModal(html);
+        }
+
     </script>
 </body>
 </html>
