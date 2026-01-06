@@ -21,7 +21,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { 
-            getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, setDoc, getDocs 
+            getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, setDoc, getDocs, getDoc, where, writeBatch 
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -49,6 +49,9 @@
         window.query = query;
         window.setDoc = setDoc;
         window.getDocs = getDocs;
+        window.getDoc = getDoc;
+        window.where = where;
+        window.writeBatch = writeBatch;
 
         signInAnonymously(auth).then(() => {
             console.log("Connected to Firebase");
@@ -158,6 +161,7 @@
                 </div>
                 <div class="flex items-center gap-2 md:gap-3">
                     <div id="admin-header-controls" class="flex gap-2">
+                        <button onclick="showWipeSystemModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-rose-500 hover:bg-slate-700 hover:text-rose-400" title="Wipe System Data"><i class="ph ph-trash text-xl"></i></button>
                         <button onclick="showUserManageModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-purple-400 hover:bg-slate-700" title="Quản lý Users"><i class="ph ph-user-gear text-xl"></i></button>
                         <button onclick="showHistoryModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-blue-400 hover:bg-slate-700" title="Lịch sử giao dịch"><i class="ph ph-clock-counter-clockwise text-xl"></i></button>
                     </div>
@@ -394,18 +398,36 @@
         }
 
         async function checkAndSeedUsers() {
-            const snap = await window.getDocs(window.collection(window.db, "users"));
+            const userRef = window.collection(window.db, "users");
+            const snap = await window.getDocs(userRef);
+
+            // 1. Check/Create Super Admin specifically (Force Create if missing)
+            const superAdminRef = window.doc(window.db, "users", "administrator");
+            const superAdminSnap = await window.getDoc(superAdminRef);
+            
+            if (!superAdminSnap.exists()) {
+                console.log("Creating Super Admin...");
+                await window.setDoc(superAdminRef, {
+                    id: 'administrator', username: 'administrator', password: '2122', role: 'admin', name: 'AdminScript'
+                });
+            }
+
+            // 2. Seed others ONLY if totally empty
             if (snap.empty) {
-                console.log("Seeding default users...");
+                console.log("Seeding other default users...");
                 const defaultUsers = [
                     { id: 'admin', username: 'Admin', password: '1111', role: 'admin', name: 'Administrator' },
                     { id: 'minh', username: 'minh', password: '1234', role: 'viewer', name: 'Minh Sale' },
                     { id: 'huy', username: 'huy', password: '1234', role: 'viewer', name: 'Huy Sale' }
                 ];
                 for (const u of defaultUsers) {
-                    await window.setDoc(window.doc(window.db, "users", u.id), u);
+                    // Don't overwrite administrator if it was just created/exists
+                    if (u.id !== 'administrator') {
+                         await window.setDoc(window.doc(window.db, "users", u.id), u);
+                    }
                 }
             }
+            
             // Enable login button after initial check
             document.getElementById('loading-msg').classList.add('hidden');
         }
@@ -671,7 +693,10 @@
                                     <i class="ph ph-copy text-slate-600 text-xs"></i>
                                 </div>
                             </div>
-                            ${acc.note ? `<div class="text-xs px-2 py-1 rounded inline-block bg-slate-800 text-slate-400">${acc.note}</div>` : ''}
+                            <div class="flex items-center gap-2 mt-1 group/note">
+                                ${acc.note ? `<div class="text-xs px-2 py-1 rounded inline-block bg-slate-800 text-slate-400">${acc.note}</div>` : `<div class="text-xs px-2 py-1 rounded inline-block bg-slate-800/50 text-slate-600 italic">No note</div>`}
+                                ${!isSold ? `<button onclick="editNote('${acc.id}', '${acc.note || ''}')" class="text-slate-600 hover:text-indigo-400 p-0.5"><i class="ph ph-pencil-simple text-xs"></i></button>` : ''}
+                            </div>
                         </div>
                         <div class="flex flex-col justify-between items-end gap-2">
                             <div class="flex items-center justify-end gap-2 group/price">
@@ -698,7 +723,6 @@
                         </button>
                         ${!isSold ? `
                             <button onclick="requestSellSingle('${acc.id}')" class="p-2 rounded-lg bg-emerald-900/30 text-emerald-400"><i class="ph ph-currency-dollar"></i></button>
-                            <button onclick="requestWipe('${acc.id}')" class="p-2 rounded-lg bg-orange-900/30 text-orange-400" title="Wipe Data"><i class="ph ph-eraser"></i></button>
                         ` : ''}
                         <button onclick="requestDelete('${acc.id}')" class="p-2 rounded-lg bg-rose-900/30 text-rose-400"><i class="ph ph-trash"></i></button>
                     </div>
@@ -788,6 +812,36 @@
             }
         }
 
+        // --- NOTE EDITING ---
+        function editNote(id, oldNote) {
+            const modal = document.getElementById('modal-content');
+            modal.innerHTML = `
+                <h3 class="font-bold text-lg mb-4">Cập nhật Ghi chú</h3>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Nội dung</label>
+                    <input type="text" id="edit-note-input" value="${oldNote}" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:border-amber-500 outline-none text-white font-bold" placeholder="Nhập ghi chú...">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="closeModal()" class="flex-1 py-2 rounded bg-slate-700 text-white font-bold">Hủy</button>
+                    <button onclick="saveNote('${id}')" class="flex-1 py-2 rounded bg-emerald-600 text-white font-bold">Lưu</button>
+                </div>
+            `;
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('edit-note-input').focus();
+        }
+
+        async function saveNote(id) {
+            const newNote = document.getElementById('edit-note-input').value;
+            try {
+                await window.updateDoc(window.doc(window.db, "accounts", id), { note: newNote });
+                showToast('Đã cập nhật ghi chú');
+                closeModal();
+            } catch (e) {
+                console.error(e);
+                showToast('Lỗi khi cập nhật', 'error');
+            }
+        }
+
         async function copyAndStart(id) {
             const acc = state.accounts.find(a => a.id === id);
             copyToClipboard(`${acc.username}|${acc.password}`, "User|Pass");
@@ -799,38 +853,13 @@
         }
 
         function requestDelete(id) {
-            showConfirmModal('Xác nhận xóa', 'Bạn chắc chắn muốn xóa?', async () => {
+            showConfirmModal('Xác nhận xóa', 'Bạn chắc chắn muốn xóa account này?', async () => {
                 await window.deleteDoc(window.doc(window.db, "accounts", id));
                 showToast('Đã xóa Acc', 'error');
                 closeModal();
             });
         }
         
-        // --- WIPE DATA LOGIC ---
-        function requestWipe(id) {
-             showConfirmModal('Wipe Data Acc', 'Bạn muốn reset tiến trình cày của acc này? (User/Pass vẫn giữ nguyên)', async () => {
-                await performWipe(id);
-                closeModal();
-            });
-        }
-
-        async function performWipe(id) {
-            try {
-                // Reset status to pending, days to 0, mode manual
-                await window.updateDoc(window.doc(window.db, "accounts", id), {
-                    status: 'pending',
-                    daysFarmed: 0,
-                    mode: 'manual',
-                    farmingStartedAt: null,
-                    // We keep username, password, price, note, createdAt
-                });
-                showToast('Đã Wipe Data thành công');
-            } catch(e) {
-                console.error(e);
-                showToast('Lỗi Wipe Data', 'error');
-            }
-        }
-
         // --- SELLING LOGIC (Corrected Select Seller) ---
         function requestSellSingle(id) {
             showConfirmModal('Bán Account', 'Chọn người bán tính doanh thu:', async () => {
@@ -920,28 +949,73 @@
             showSoldModal('batch', count, revenue);
         }
 
+        // --- GLOBAL WIPE SYSTEM ---
+        function showWipeSystemModal() {
+             showConfirmModal('Wipe System Data', 'Hành động này sẽ xóa TOÀN BỘ Accounts và History trong hệ thống. Dữ liệu sẽ không thể khôi phục. Tiếp tục?', async () => {
+                await performWipeSystem();
+                closeModal();
+            });
+        }
+
+        async function performWipeSystem() {
+            try {
+                showToast('Đang xóa dữ liệu...', 'success');
+                // Batch delete all accounts
+                const accSnap = await window.getDocs(window.collection(window.db, "accounts"));
+                const accBatch = window.writeBatch(window.db);
+                accSnap.forEach(doc => accBatch.delete(doc.ref));
+                await accBatch.commit();
+
+                // Batch delete all history
+                const histSnap = await window.getDocs(window.collection(window.db, "history"));
+                const histBatch = window.writeBatch(window.db);
+                histSnap.forEach(doc => histBatch.delete(doc.ref));
+                await histBatch.commit();
+
+                showToast('Đã xóa toàn bộ dữ liệu hệ thống!', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Lỗi khi xóa dữ liệu', 'error');
+            }
+        }
+
         // --- USER MANAGEMENT & EDITING ---
         function showUserManageModal() {
-            const userHtml = state.users.map(u => {
-                // Calculate Revenue for Viewer
-                let revHtml = '';
-                if (u.role === 'viewer') {
-                    const rev = state.history.filter(h => h.soldBy === u.id).reduce((s, h) => s + h.price, 0);
-                    revHtml = `<div class="mt-2 pt-2 border-t border-slate-700 flex justify-between text-xs text-emerald-400 font-bold"><span>Doanh thu:</span><span>${rev.toLocaleString()} đ</span></div>`;
-                }
+            const currentId = state.currentUser.id;
+            
+            // Filter: If I am NOT 'administrator', I cannot see 'administrator'
+            const userHtml = state.users
+                .filter(u => currentId === 'administrator' || u.id !== 'administrator')
+                .map(u => {
+                    const isSuperAdmin = u.id === 'administrator';
+                    
+                    // Calculate Revenue for Viewer
+                    let revHtml = '';
+                    if (u.role === 'viewer') {
+                        const rev = state.history.filter(h => h.soldBy === u.id).reduce((s, h) => s + h.price, 0);
+                        revHtml = `<div class="mt-2 pt-2 border-t border-slate-700 flex justify-between text-xs text-emerald-400 font-bold"><span>Doanh thu:</span><span>${rev.toLocaleString()} đ</span></div>`;
+                    }
 
-                return `
-                <div class="p-3 rounded-xl border border-slate-700 bg-slate-800 mb-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-bold">${u.name} <span class="text-xs text-slate-500">(${u.role})</span></div>
-                            <div class="text-xs font-mono text-slate-400">User: ${u.username}</div>
+                    return `
+                    <div class="p-3 rounded-xl border border-slate-700 bg-slate-800 mb-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold flex items-center gap-2">
+                                    ${u.name} 
+                                    ${isSuperAdmin ? '<i class="ph ph-crown text-amber-400"></i>' : ''}
+                                    <span class="text-xs text-slate-500 font-normal">(${u.role})</span>
+                                </div>
+                                <div class="text-xs font-mono text-slate-400">User: ${u.username}</div>
+                            </div>
+                            <div class="flex gap-2">
+                                 <button onclick="editUser('${u.id}')" class="text-indigo-400 p-1 bg-indigo-900/30 rounded"><i class="ph ph-pencil-simple"></i></button>
+                                 <button onclick="wipeUserStats('${u.id}')" class="text-amber-400 p-1 bg-amber-900/30 rounded" title="Wipe Stats & Sold Accounts"><i class="ph ph-eraser"></i></button>
+                                 ${!isSuperAdmin ? `<button onclick="deleteUser('${u.id}')" class="text-rose-500 p-1 bg-rose-900/20 rounded" title="Xóa User"><i class="ph ph-user-minus"></i></button>` : ''}
+                            </div>
                         </div>
-                        <button onclick="editUser('${u.id}')" class="text-indigo-400 p-1"><i class="ph ph-pencil-simple"></i></button>
-                    </div>
-                    ${revHtml}
-                </div>`;
-            }).join('');
+                        ${revHtml}
+                    </div>`;
+                }).join('');
 
             const modal = document.getElementById('modal-content');
             modal.innerHTML = `
@@ -953,6 +1027,48 @@
                 <button onclick="addNewUserPrompt()" class="w-full py-2 rounded-lg bg-indigo-600 text-white font-bold text-sm">Thêm User Mới</button>
             `;
             document.getElementById('modal-overlay').classList.remove('hidden');
+        }
+        
+        // Delete User Function (Combines wipe + delete doc)
+        function deleteUser(uid) {
+            if(uid === 'administrator') return alert("Không thể xóa Super Admin!");
+            
+            showConfirmModal('Xóa User', 'Hành động này sẽ xóa User và TOÀN BỘ dữ liệu (lịch sử, acc đã bán) của họ. Không thể hoàn tác!', async () => {
+                // Reuse wipe logic first
+                await performWipeUserStats(uid); 
+                // Then delete user doc
+                await window.deleteDoc(window.doc(window.db, "users", uid));
+                
+                showToast('Đã xóa User thành công');
+                showUserManageModal(); // Refresh modal
+                closeModal(); // Close confirm modal
+            });
+        }
+
+        // Wipe User Stats AND Delete Sold Accounts
+        function wipeUserStats(uid) {
+             showConfirmModal('Xóa Dữ Liệu User', 'Xóa lịch sử bán hàng và TOÀN BỘ account đã bán bởi user này? Hành động không thể hoàn tác.', async () => {
+                await performWipeUserStats(uid);
+                showToast('Đã xóa dữ liệu user', 'success');
+                showUserManageModal(); // Refresh modal
+                closeModal(); // Close confirm modal
+            });
+        }
+        
+        async function performWipeUserStats(uid) {
+             // 1. Delete History
+            const qHist = window.query(window.collection(window.db, "history"), window.where("soldBy", "==", uid));
+            const snapHist = await window.getDocs(qHist);
+            const batchHist = window.writeBatch(window.db);
+            snapHist.forEach(d => batchHist.delete(d.ref));
+            await batchHist.commit();
+
+            // 2. Delete Sold Accounts
+            const qAcc = window.query(window.collection(window.db, "accounts"), window.where("soldBy", "==", uid), window.where("status", "==", "sold"));
+            const snapAcc = await window.getDocs(qAcc);
+            const batchAcc = window.writeBatch(window.db);
+            snapAcc.forEach(d => batchAcc.delete(d.ref));
+            await batchAcc.commit();
         }
 
         // Edit User (Admin)
@@ -1108,7 +1224,7 @@
         }
         function adjustSellQty(v) {
             const el = document.getElementById('sell-qty-input');
-            el.value = Math.max(i1, parseInt(el.value)+v);
+            el.value = Math.max(1, parseInt(el.value)+v);
         }
         function toggleTheme() {
             state.isDark = !state.isDark;
@@ -1123,5 +1239,3 @@
     </script>
 </body>
 </html>
-
-
