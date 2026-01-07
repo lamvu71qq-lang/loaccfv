@@ -217,7 +217,7 @@
                             <div class="flex items-center justify-between mb-6 relative z-10">
                                 <div>
                                     <h2 class="font-bold text-lg text-white">Bán Random</h2>
-                                    <p class="text-xs text-purple-300">Xuất acc nhanh</p>
+                                    <p class="text-xs text-purple-300">Chỉ bán acc ĐÃ XONG</p>
                                 </div>
                                 <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700">
                                     <i class="ph ph-storefront text-purple-400 text-2xl"></i>
@@ -414,11 +414,16 @@
         }
 
         function copyText(text) {
+            // Fallback method using textarea because navigator.clipboard is often blocked in iframes
             const textArea = document.createElement("textarea");
             textArea.value = text;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
+            
+            // Avoid scrolling to bottom
             textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0"; // Make it invisible
+            
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
@@ -428,12 +433,13 @@
                 if (successful) {
                     showToast("Đã copy!", "success");
                 } else {
-                    showToast("Lỗi copy", "error");
+                    showToast("Lỗi copy (browser block)", "error");
                 }
             } catch (err) {
-                console.error('Failed to copy: ', err);
+                console.error('Fallback copy failed', err);
                 showToast("Lỗi copy", "error");
             }
+            
             document.body.removeChild(textArea);
         }
 
@@ -609,10 +615,8 @@
             
             const revenue = state.history.reduce((sum, h) => sum + (Number(h.price) || 0), 0);
 
-            // Ready count: Completed + Pending + Farming
-            const readyCount = completed + pending + farming; 
-            const unsoldCount = total - sold;
-            document.getElementById('ready-count-badge').textContent = `${unsoldCount} Acc sẵn`;
+            // Ready count badge -> Only show COMPLETED count for Sell Random
+            document.getElementById('ready-count-badge').textContent = `${completed} Acc sẵn`;
 
             const statsHTML = `
                 <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
@@ -925,16 +929,14 @@
 
         function preCheckSellRandom() {
              const qty = parseInt(document.getElementById('sell-qty-input').value);
-            // Prioritize: Completed -> Farming -> Pending
-            const unsold = state.accounts.filter(a => a.status !== 'sold');
-            const completed = unsold.filter(a => a.status === 'completed');
-            const farming = unsold.filter(a => a.status === 'farming');
-            const pending = unsold.filter(a => a.status === 'pending');
+            
+            // Only allow selling accounts that are 'completed'
+            const completed = state.accounts.filter(a => a.status === 'completed');
 
-            let pool = [...completed, ...farming, ...pending];
+            let pool = [...completed];
 
             if (pool.length < qty) {
-                return showToast(`Không đủ acc! Chỉ còn ${pool.length}`, 'error');
+                return showToast(`Không đủ acc XONG! Chỉ còn ${pool.length} acc`, 'error');
             }
 
             // Take top N 
