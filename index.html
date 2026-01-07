@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -34,32 +34,43 @@
           measurementId: "G-372P84L4GG"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
 
-        // Expose DB functions to global window
-        window.db = db;
-        window.collection = collection;
-        window.doc = doc;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.deleteDoc = deleteDoc;
-        window.onSnapshot = onSnapshot;
-        window.query = query;
-        window.setDoc = setDoc;
-        window.getDocs = getDocs;
-        window.getDoc = getDoc;
-        window.where = where;
-        window.writeBatch = writeBatch;
+            // Expose DB functions to global window for the main app logic
+            window.db = db;
+            window.auth = auth;
+            window.collection = collection;
+            window.doc = doc;
+            window.addDoc = addDoc;
+            window.updateDoc = updateDoc;
+            window.deleteDoc = deleteDoc;
+            window.onSnapshot = onSnapshot;
+            window.query = query;
+            window.setDoc = setDoc;
+            window.getDocs = getDocs;
+            window.getDoc = getDoc;
+            window.where = where;
+            window.writeBatch = writeBatch;
 
-        signInAnonymously(auth).then(() => {
-            console.log("Connected to Firebase");
-            window.initApp();
-        }).catch((error) => {
-            console.error("Firebase Auth Error", error);
-            alert("Lỗi kết nối Server! Vui lòng reload.");
-        });
+            // Auto sign-in
+            signInAnonymously(auth).then(() => {
+                console.log("Connected to Firebase");
+                window.isFirebaseReady = true;
+                if(window.initApp) window.initApp();
+            }).catch((error) => {
+                console.error("Firebase Auth Error", error);
+                document.getElementById('loading-msg').innerText = "Lỗi kết nối Server! (Auth Error)";
+                document.getElementById('loading-msg').className = "text-center text-rose-500 font-bold text-xs";
+            });
+
+        } catch (e) {
+            console.error("Firebase Init Error", e);
+            document.getElementById('loading-msg').innerText = "Lỗi Config Firebase!";
+            document.getElementById('loading-msg').className = "text-center text-rose-500 font-bold text-xs";
+        }
     </script>
 
     <script>
@@ -105,6 +116,13 @@
         .dark ::-webkit-scrollbar-track { background: #0f172a; }
         .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        
+        /* Custom scrollbar hiding for horizontal filters */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
         body { transition: background-color 0.3s, color 0.3s; }
     </style>
 </head>
@@ -126,7 +144,7 @@
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase mb-1.5 opacity-70">Username</label>
-                    <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="Nhập tên đăng nhập" autofocus>
+                    <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="Nhập tên đăng nhập" autofocus autocomplete="off">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase mb-1.5 opacity-70">Password</label>
@@ -135,8 +153,8 @@
                 <div id="login-error" class="hidden p-3 rounded-lg bg-rose-500/10 text-rose-500 text-sm font-bold flex items-center gap-2">
                     <i class="ph ph-warning-circle"></i> <span>Sai tên đăng nhập hoặc mật khẩu!</span>
                 </div>
-                <div id="loading-msg" class="hidden text-center text-amber-400 font-bold text-sm animate-pulse">Đang tải dữ liệu từ server...</div>
-                <button type="submit" id="btn-login" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/30 active:scale-95">Đăng Nhập</button>
+                <div id="loading-msg" class="text-center text-amber-400 font-bold text-xs animate-pulse">Đang kết nối server...</div>
+                <button type="submit" id="btn-login" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Đăng Nhập</button>
             </form>
         </div>
     </div>
@@ -146,13 +164,11 @@
         <header class="backdrop-blur-md sticky top-0 z-50 border-b shadow-sm transition-colors duration-300 bg-slate-900/80 border-slate-800">
             <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="bg-amber-600 p-1.5 rounded-lg text-white shadow-lg shadow-amber-500/30">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M224,96a56.06,56.06,0,0,0-56-56,8,8,0,0,0-8,8,40,40,0,0,1-80,0,8,8,0,0,0-8-8,56.06,56.06,0,0,0-56,56,8,8,0,0,0,8,8,40,40,0,0,1,33.84,18.78,56.12,56.12,0,0,0,84.32,0A40,40,0,0,1,176,104,8,8,0,0,0,224,96ZM48,96a40,40,0,0,1,28.62-38.34A56,56,0,0,0,32,96c0,13.23,7.26,24.83,18.09,31.72A40.16,40.16,0,0,1,48,96Zm174.12,32.3A56.1,56.1,0,0,0,186,171.18c4.37,8.22,6.58,16.59,6,24.23-.74,9.65-6.69,17-15.65,19.33a54.54,54.54,0,0,1-13.67,1.72c-9.1,0-19.36-2.58-29.07-7.29a8,8,0,0,0-7.22,0c-9.71,4.71-20,7.29-29.07,7.29a54.54,54.54,0,0,1-13.67-1.72c-9-2.31-14.91-9.68-15.65-19.33-.55-7.64,1.66-16,6-24.23a56,56,0,0,0,0-85.36c.7-1.32,1.44-2.61,2.22-3.86a56,56,0,0,0,145.87,49.22ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path>
-                        </svg>
+                    <div class="bg-amber-600 p-1.5 rounded-lg text-white shadow-lg shadow-amber-500/30 hidden sm:block">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256"><path d="M224,96a56.06,56.06,0,0,0-56-56,8,8,0,0,0-8,8,40,40,0,0,1-80,0,8,8,0,0,0-8-8,56.06,56.06,0,0,0-56,56,8,8,0,0,0,8,8,40,40,0,0,1,33.84,18.78,56.12,56.12,0,0,0,84.32,0A40,40,0,0,1,176,104,8,8,0,0,0,224,96ZM48,96a40,40,0,0,1,28.62-38.34A56,56,0,0,0,32,96c0,13.23,7.26,24.83,18.09,31.72A40.16,40.16,0,0,1,48,96Zm174.12,32.3A56.1,56.1,0,0,0,186,171.18c4.37,8.22,6.58,16.59,6,24.23-.74,9.65-6.69,17-15.65,19.33a54.54,54.54,0,0,1-13.67,1.72c-9.1,0-19.36-2.58-29.07-7.29a8,8,0,0,0-7.22,0c-9.71,4.71-20,7.29-29.07,7.29a54.54,54.54,0,0,1-13.67-1.72c-9-2.31-14.91-9.68-15.65-19.33-.55-7.64,1.66-16,6-24.23a56,56,0,0,0,0-85.36c.7-1.32,1.44-2.61,2.22-3.86a56,56,0,0,0,145.87,49.22ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path></svg>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold leading-none text-amber-500">BearAcc Pro</h1>
+                        <h1 class="text-xl font-bold leading-none text-amber-500">BearAcc</h1>
                         <div class="flex items-center gap-2 mt-1">
                             <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase bg-rose-500 text-white">ADMIN</span>
                             <span id="user-name-display" class="text-xs font-medium text-slate-400">User</span>
@@ -162,7 +178,7 @@
                 <div class="flex items-center gap-2 md:gap-3">
                     <div id="admin-header-controls" class="flex gap-2">
                         <button onclick="showWipeSystemModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-rose-500 hover:bg-slate-700 hover:text-rose-400" title="Wipe System Data"><i class="ph ph-trash text-xl"></i></button>
-                        <button onclick="showUserManageModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-purple-400 hover:bg-slate-700" title="Quản lý Users"><i class="ph ph-user-gear text-xl"></i></button>
+                        <button onclick="showUserManageModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-purple-400 hover:bg-slate-700" title="Quản lý Users"><i class="ph ph-users-three text-xl"></i></button>
                         <button onclick="showHistoryModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-blue-400 hover:bg-slate-700" title="Lịch sử giao dịch"><i class="ph ph-clock-counter-clockwise text-xl"></i></button>
                     </div>
                     <!-- Settings for Viewer -->
@@ -218,8 +234,8 @@
                             <div class="space-y-4">
                                 <div class="p-4 rounded-xl border border-dashed relative bg-slate-800 border-slate-700">
                                     <div class="space-y-2 font-mono text-sm">
-                                        <div class="flex justify-between"><span class="text-slate-400">User:</span><span id="gen-email" class="font-semibold select-all text-white">---</span></div>
-                                        <div class="flex justify-between"><span class="text-slate-400">Pass:</span><span id="gen-pass" class="font-semibold select-all text-white">---</span></div>
+                                        <div class="flex justify-between"><span class="text-slate-400">User:</span><span id="gen-email" class="font-semibold select-all text-white cursor-pointer" onclick="copyText(this.innerText)">---</span></div>
+                                        <div class="flex justify-between"><span class="text-slate-400">Pass:</span><span id="gen-pass" class="font-semibold select-all text-white cursor-pointer" onclick="copyText(this.innerText)">---</span></div>
                                     </div>
                                 </div>
                                 <div class="flex gap-3">
@@ -237,8 +253,8 @@
                             </div>
                             <form id="add-acc-form" onsubmit="handleAddAccount(event)" class="space-y-4 relative z-10">
                                 <div class="space-y-3">
-                                    <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Email / Username">
-                                    <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Password">
+                                    <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Email / Username" required>
+                                    <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Password" required>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <input type="number" id="input-price" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Giá (VNĐ)">
@@ -256,6 +272,7 @@
                         <i class="ph ph-shield-check text-5xl mb-4 text-slate-500"></i>
                         <h3 class="font-bold text-lg">Chế độ Viewer</h3>
                         <p class="text-sm text-slate-400">Danh sách tài khoản được ẩn.</p>
+                        <p class="text-xs text-slate-500 mt-2">Liên hệ Admin để mua tài khoản.</p>
                     </div>
                 </div>
 
@@ -298,19 +315,19 @@
     </div>
 
     <!-- MODAL OVERLAY -->
-    <div id="modal-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-        <div id="modal-content" class="w-full max-w-sm rounded-2xl p-6 shadow-2xl border animate-scale-in bg-slate-900 border-slate-700 text-white relative">
+    <div id="modal-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onclick="closeModal(event)">
+        <div id="modal-content" class="w-full max-w-sm rounded-2xl p-6 shadow-2xl border animate-scale-in bg-slate-900 border-slate-700 text-white relative" onclick="event.stopPropagation()">
             <!-- Content Injected via JS -->
         </div>
     </div>
 
     <!-- LARGE MODAL OVERLAY -->
-    <div id="large-modal-overlay" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-        <div id="large-modal-content" class="w-full sm:max-w-2xl h-[80vh] sm:h-[600px] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl border animate-slide-in bg-slate-900 border-slate-700 text-white relative"></div>
+    <div id="large-modal-overlay" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onclick="closeLargeModal(event)">
+        <div id="large-modal-content" class="w-full sm:max-w-3xl h-[80vh] sm:h-[600px] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl border animate-slide-in bg-slate-900 border-slate-700 text-white relative" onclick="event.stopPropagation()"></div>
     </div>
 
     <!-- CENTERED TOAST (NOTIFICATION) -->
-    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-6 py-4 rounded-xl shadow-2xl flex flex-col items-center justify-center gap-2 font-medium text-white transition-all duration-300 opacity-0 scale-90 invisible min-w-[200px] text-center">
+    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-6 py-4 rounded-xl shadow-2xl flex flex-col items-center justify-center gap-2 font-medium text-white transition-all duration-300 opacity-0 scale-90 invisible min-w-[200px] text-center pointer-events-none">
         <i id="toast-icon" class="ph ph-check-circle text-4xl mb-1"></i>
         <span id="toast-message" class="text-lg">Notification</span>
     </div>
@@ -319,57 +336,95 @@
         // --- GLOBAL STATE ---
         let state = {
             currentUser: null,
-            users: [], // Sync from Firebase
-            accounts: [], // Sync from Firebase
-            history: [], // Sync from Firebase
+            users: [], 
+            accounts: [], 
+            history: [], 
             filter: 'all',
             searchQuery: '',
             isDark: true,
             sellQuantity: 1
         };
 
-        // --- COMMISSION LOGIC ---
-        function getCommissionRate(count) {
-            if (count >= 50) return 0.07;
-            if (count >= 20) return 0.05;
-            return 0.02;
+        // --- HELPER FUNCTIONS ---
+        const formatMoney = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        const formatDate = (ts) => new Date(ts).toLocaleString('vi-VN');
+        
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msgEl = document.getElementById('toast-message');
+            
+            msgEl.textContent = msg;
+            toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-2 font-bold text-white transition-all duration-300 min-w-[220px] text-center backdrop-blur-md border border-white/10 ${type === 'success' ? 'bg-emerald-600/90' : 'bg-rose-600/90'}`;
+            icon.className = type === 'success' ? 'ph ph-check-circle text-5xl mb-2' : 'ph ph-warning-circle text-5xl mb-2';
+            
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, -50%) scale(1)';
+            toast.style.visibility = 'visible';
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -50%) scale(0.9)';
+                toast.style.visibility = 'hidden';
+            }, 2000);
+        }
+
+        async function copyText(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast("Đã copy!", "success");
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+            }
         }
 
         // --- APP INITIALIZATION ---
         window.initApp = async () => {
-            // Apply Theme
-            const storedTheme = localStorage.getItem('theme');
-            if (storedTheme === 'light') {
+            if(!window.isFirebaseReady) return; // Wait for firebase
+
+            // Check Theme
+            if (localStorage.getItem('theme') === 'light') {
                 state.isDark = false;
                 document.documentElement.classList.remove('dark');
             }
             updateThemeIcon();
 
-            // Set up Realtime Listeners
             setupListeners();
-            
-            // Check & Seed Users if empty
             await checkAndSeedUsers();
 
-            // Setup Auto-Updater (Client-side Timer for farming days display)
+            // Refresh farming duration display every minute
             setInterval(() => {
                 if (state.currentUser && state.currentUser.role === 'admin') {
-                    renderAccounts(); // Re-render to update timers visual
+                    renderAccounts(); 
                 }
             }, 60000);
+
+            // Hide loading message once init is done
+            document.getElementById('loading-msg').classList.add('hidden');
         };
+
+        function toggleTheme() {
+            state.isDark = !state.isDark;
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', state.isDark ? 'dark' : 'light');
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('theme-icon');
+            icon.className = state.isDark ? 'ph ph-sun text-xl' : 'ph ph-moon text-xl';
+        }
 
         // --- FIREBASE LISTENERS ---
         function setupListeners() {
+            if (!window.db) return; // Guard against init fail
+
             // Accounts
             window.onSnapshot(window.query(window.collection(window.db, "accounts")), (snapshot) => {
                 state.accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Sort by createdAt desc locally for display
+                // Sort by createdAt desc
                 state.accounts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                
-                if (state.currentUser) {
-                    renderApp(); // Data change triggers render
-                }
+                if (state.currentUser) renderApp();
             });
 
             // History
@@ -383,14 +438,13 @@
             window.onSnapshot(window.query(window.collection(window.db, "users")), (snapshot) => {
                 state.users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                // If current user details changed in DB (e.g. password changed), update local session
+                // Sync current session if user updated
                 if (state.currentUser) {
-                    const freshUser = state.users.find(u => u.id === state.currentUser.id);
-                    if (freshUser) {
-                        state.currentUser = freshUser; // Keep session sync
+                    const fresh = state.users.find(u => u.id === state.currentUser.id);
+                    if (fresh) {
+                        state.currentUser = fresh;
                         renderApp();
                     } else {
-                        // User deleted? Logout
                         logout(); 
                     }
                 }
@@ -398,61 +452,42 @@
         }
 
         async function checkAndSeedUsers() {
-            const userRef = window.collection(window.db, "users");
-            const snap = await window.getDocs(userRef);
-
-            // 1. Check/Create Super Admin specifically (Force Create if missing)
-            const superAdminRef = window.doc(window.db, "users", "administrator");
-            const superAdminSnap = await window.getDoc(superAdminRef);
+            // This runs on init to make sure at least Admin exists
+            if (!window.db) return;
             
-            if (!superAdminSnap.exists()) {
-                console.log("Creating Super Admin...");
-                await window.setDoc(superAdminRef, {
-                    id: 'administrator', username: 'administrator', password: '2122', role: 'admin', name: 'AdminScript'
-                });
-            }
-
-            // 2. Seed others ONLY if totally empty
-            if (snap.empty) {
-                console.log("Seeding other default users...");
-                const defaultUsers = [
-                    { id: 'admin', username: 'Admin', password: '1111', role: 'admin', name: 'Administrator' },
-                    { id: 'minh', username: 'minh', password: '1234', role: 'viewer', name: 'Minh Sale' },
-                    { id: 'huy', username: 'huy', password: '1234', role: 'viewer', name: 'Huy Sale' }
-                ];
-                for (const u of defaultUsers) {
-                    // Don't overwrite administrator if it was just created/exists
-                    if (u.id !== 'administrator') {
-                         await window.setDoc(window.doc(window.db, "users", u.id), u);
-                    }
+            // Check for hardcoded super admin
+            const adminRef = window.doc(window.db, "users", "administrator");
+            try {
+                const adminDoc = await window.getDoc(adminRef);
+                if (!adminDoc.exists()) {
+                     await window.setDoc(adminRef, {
+                        id: 'administrator', username: 'administrator', password: '111', role: 'admin', name: 'Super Admin'
+                    });
                 }
+            } catch (e) {
+                console.error("Error checking admin user:", e);
+                // If this fails (e.g. permission denied or offline), we might just be in a bad state
             }
-            
-            // Enable login button after initial check
-            document.getElementById('loading-msg').classList.add('hidden');
         }
 
-        // --- AUTH SYSTEM ---
+        // --- AUTH ---
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const userIn = document.getElementById('login-username').value.trim();
-            const passIn = document.getElementById('login-password').value.trim();
-            
+            const uInput = document.getElementById('login-username').value.trim();
+            const pInput = document.getElementById('login-password').value.trim();
+
             if (state.users.length === 0) {
-                document.getElementById('loading-msg').classList.remove('hidden');
-                return;
+                 showToast("Đang tải dữ liệu Users...", "error");
+                 return;
             }
 
-            const user = state.users.find(u => 
-                u.username.toLowerCase() === userIn.toLowerCase() && u.password === passIn
-            );
+            const user = state.users.find(u => u.username.toLowerCase() === uInput.toLowerCase() && u.password === pInput);
 
             if (user) {
                 state.currentUser = user;
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('login-error').classList.add('hidden');
-                showToast(`Xin chào ${user.name}!`, 'success');
+                showToast(`Xin chào ${user.name}!`);
                 renderApp();
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
@@ -472,13 +507,13 @@
             if (!state.currentUser) return;
             const isAdmin = state.currentUser.role === 'admin';
 
-            // Header
+            // Header Info
             document.getElementById('user-name-display').textContent = state.currentUser.name;
-            const roleBadge = document.getElementById('user-role-badge');
-            roleBadge.textContent = isAdmin ? 'ADMIN' : 'VIEWER';
-            roleBadge.className = `text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-white ${isAdmin ? 'bg-rose-500' : 'bg-blue-500'}`;
+            const badge = document.getElementById('user-role-badge');
+            badge.textContent = isAdmin ? 'ADMIN' : 'VIEWER';
+            badge.className = `text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-white ${isAdmin ? 'bg-rose-500' : 'bg-blue-500'}`;
 
-            // Visibility
+            // Visibility Toggles
             const adminEls = ['admin-controls', 'admin-list-container', 'admin-stats-container', 'admin-header-controls'];
             const viewerEls = ['viewer-placeholder', 'viewer-list-placeholder', 'viewer-stats-container', 'viewer-settings-btn'];
 
@@ -496,6 +531,549 @@
 
         function renderStats() {
             const total = state.accounts.length;
-            const unsold = state.accounts.filter(a => a.status !== 'sold').length;
             const sold = state.accounts.filter(a => a.status === 'sold').length;
-            const revenue = state.history.reduce((sum, h) => sum + h.price, 0);                            
+            const pending = state.accounts.filter(a => a.status === 'pending').length;
+            const farming = state.accounts.filter(a => a.status === 'farming').length;
+            const completed = state.accounts.filter(a => a.status === 'completed').length;
+            
+            // Calculate revenue from history
+            const revenue = state.history.reduce((sum, h) => sum + (Number(h.price) || 0), 0);
+
+            // Update ready count badge for Sell Random
+            const readyCount = completed + pending + farming; 
+            const unsoldCount = total - sold;
+            document.getElementById('ready-count-badge').textContent = `${unsoldCount} Acc sẵn`;
+
+            const statsHTML = `
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                    <p class="text-slate-400 text-xs uppercase font-bold">Tổng Acc</p>
+                    <p class="text-2xl font-bold text-white">${total}</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                    <p class="text-emerald-400 text-xs uppercase font-bold">Đã Bán</p>
+                    <p class="text-2xl font-bold text-emerald-400">${sold}</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                    <p class="text-blue-400 text-xs uppercase font-bold">Doanh Thu</p>
+                    <p class="text-lg font-bold text-blue-400">${formatMoney(revenue)}</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                    <p class="text-slate-400 text-xs uppercase font-bold">Kho (Chờ)</p>
+                    <p class="text-2xl font-bold text-white">${pending}</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                    <p class="text-amber-400 text-xs uppercase font-bold">Đang Cày</p>
+                    <p class="text-2xl font-bold text-amber-400">${farming}</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                    <p class="text-purple-400 text-xs uppercase font-bold">Xong</p>
+                    <p class="text-2xl font-bold text-purple-400">${completed}</p>
+                </div>
+            `;
+            document.getElementById('admin-stats-container').innerHTML = statsHTML;
+        }
+
+        function renderViewerStats() {
+            // Viewer only sees their own sales stats
+            const mySales = state.history.filter(h => h.soldBy === state.currentUser.username);
+            const count = mySales.length;
+            
+            // Commission logic: <20: 2%, 20-49: 5%, >=50: 7%
+            let rate = 0.02;
+            if (count >= 50) rate = 0.07;
+            else if (count >= 20) rate = 0.05;
+
+            const totalRev = mySales.reduce((s, h) => s + (Number(h.price) || 0), 0);
+            const commission = totalRev * rate;
+
+            const html = `
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Thống Kê Cá Nhân</h2>
+                        <p class="text-slate-400 text-sm">Cập nhật theo thời gian thực</p>
+                    </div>
+                    <div class="flex gap-4 w-full md:w-auto">
+                        <div class="flex-1 md:flex-none p-4 rounded-xl bg-slate-800 text-center min-w-[120px]">
+                            <p class="text-xs text-slate-400 uppercase font-bold">Đã Bán</p>
+                            <p class="text-xl font-bold text-white">${count}</p>
+                        </div>
+                        <div class="flex-1 md:flex-none p-4 rounded-xl bg-slate-800 text-center min-w-[120px]">
+                            <p class="text-xs text-slate-400 uppercase font-bold">Hoa Hồng (${rate*100}%)</p>
+                            <p class="text-xl font-bold text-emerald-400">${formatMoney(commission)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('viewer-stats-container').innerHTML = html;
+        }
+
+        function renderAccounts() {
+            const listEl = document.getElementById('accounts-list');
+            listEl.innerHTML = '';
+
+            let filtered = state.accounts;
+            
+            // Filter by Tab
+            if (state.filter !== 'all') {
+                filtered = filtered.filter(a => a.status === state.filter);
+            }
+
+            // Filter by Search
+            if (state.searchQuery) {
+                const q = state.searchQuery.toLowerCase();
+                filtered = filtered.filter(a => 
+                    a.username.toLowerCase().includes(q) || 
+                    (a.note && a.note.toLowerCase().includes(q))
+                );
+            }
+
+            document.getElementById('list-count-badge').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-40 text-slate-500">
+                        <i class="ph ph-ghost text-4xl mb-2"></i>
+                        <p>Không tìm thấy tài khoản nào.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(acc => {
+                // Status Color Logic
+                let statusColor = 'bg-slate-700 text-slate-300';
+                let statusText = acc.status;
+                if (acc.status === 'pending') { statusColor = 'bg-slate-700 text-slate-300'; statusText = 'Chờ'; }
+                if (acc.status === 'farming') { statusColor = 'bg-amber-900/40 text-amber-400 border border-amber-500/20'; statusText = 'Đang cày'; }
+                if (acc.status === 'completed') { statusColor = 'bg-purple-900/40 text-purple-400 border border-purple-500/20'; statusText = 'Xong'; }
+                if (acc.status === 'sold') { statusColor = 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/20'; statusText = 'Đã Bán'; }
+
+                // Farming Duration
+                let farmInfo = '';
+                if (acc.status === 'farming' && acc.farmingStart) {
+                    const diff = Date.now() - acc.farmingStart;
+                    const days = (diff / (1000 * 60 * 60 * 24)).toFixed(1);
+                    farmInfo = `<span class="text-[10px] ml-2 font-mono text-amber-500 bg-amber-950 px-1.5 rounded"><i class="ph ph-timer"></i> ${days}d</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = "card-hover p-4 rounded-xl border bg-slate-900 border-slate-800 transition-all group";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${statusColor}">${statusText}</span>
+                            ${farmInfo}
+                        </div>
+                        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="editAccount('${acc.id}')" class="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-blue-400"><i class="ph ph-pencil-simple"></i></button>
+                            <button onclick="deleteAccount('${acc.id}')" class="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-rose-400"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-1 mb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-user text-slate-500 text-sm"></i>
+                            <span class="font-mono font-medium text-white select-all text-sm cursor-pointer hover:text-amber-500 transition-colors" onclick="copyText('${acc.username}')">${acc.username}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-key text-slate-500 text-sm"></i>
+                            <span class="font-mono text-slate-400 select-all text-sm cursor-pointer hover:text-white transition-colors" onclick="copyText('${acc.password}')">${acc.password}</span>
+                        </div>
+                         ${acc.price ? `<div class="flex items-center gap-2"><i class="ph ph-currency-dollar text-slate-500 text-sm"></i><span class="text-emerald-400 font-bold text-sm">${formatMoney(acc.price)}</span></div>` : ''}
+                    </div>
+                    
+                    <div class="pt-3 border-t border-slate-800 flex justify-between items-center">
+                        <span class="text-xs text-slate-500 italic max-w-[150px] truncate">${acc.note || 'Không có ghi chú'}</span>
+                        
+                        ${acc.status !== 'sold' ? `
+                        <div class="flex gap-1">
+                            ${acc.status !== 'farming' ? `<button onclick="updateAccountStatus('${acc.id}', 'farming')" class="px-2 py-1 rounded text-[10px] font-bold bg-slate-800 hover:bg-amber-900/50 text-slate-400 hover:text-amber-400 transition-colors">FARM</button>` : ''}
+                            ${acc.status !== 'completed' ? `<button onclick="updateAccountStatus('${acc.id}', 'completed')" class="px-2 py-1 rounded text-[10px] font-bold bg-slate-800 hover:bg-purple-900/50 text-slate-400 hover:text-purple-400 transition-colors">DONE</button>` : ''}
+                        </div>
+                        ` : `<span class="text-[10px] text-emerald-500 font-bold">Sold by ${acc.soldBy || 'Unknown'}</span>`}
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        // --- ACCOUNT ACTIONS ---
+        async function handleAddAccount(e) {
+            e.preventDefault();
+            const u = document.getElementById('input-username').value.trim();
+            const p = document.getElementById('input-password').value.trim();
+            const price = document.getElementById('input-price').value;
+            const note = document.getElementById('input-note').value;
+
+            if (!u || !p) return showToast('Thiếu Username/Pass', 'error');
+
+            try {
+                await window.addDoc(window.collection(window.db, "accounts"), {
+                    username: u,
+                    password: p,
+                    price: Number(price) || 0,
+                    note: note,
+                    status: 'pending',
+                    createdAt: Date.now()
+                });
+                showToast("Đã thêm Account!");
+                e.target.reset();
+                // If Hotmail was used, regen
+                generateHotmail(); 
+            } catch (err) {
+                console.error(err);
+                showToast("Lỗi thêm acc", "error");
+            }
+        }
+
+        async function updateAccountStatus(id, status) {
+            const updateData = { status: status };
+            if (status === 'farming') updateData.farmingStart = Date.now();
+            await window.updateDoc(window.doc(window.db, "accounts", id), updateData);
+            showToast(`Đã chuyển sang ${status}`);
+        }
+
+        async function deleteAccount(id) {
+            if(!confirm("Xóa tài khoản này?")) return;
+            await window.deleteDoc(window.doc(window.db, "accounts", id));
+            showToast("Đã xóa");
+        }
+
+        // --- SELL RANDOM LOGIC ---
+        function adjustSellQty(n) {
+            const input = document.getElementById('sell-qty-input');
+            let val = parseInt(input.value) + n;
+            if (val < 1) val = 1;
+            input.value = val;
+            state.sellQuantity = val;
+        }
+
+        async function requestSellRandom() {
+            const qty = parseInt(document.getElementById('sell-qty-input').value);
+            // Prioritize: Completed -> Farming -> Pending
+            const unsold = state.accounts.filter(a => a.status !== 'sold');
+            const completed = unsold.filter(a => a.status === 'completed');
+            const farming = unsold.filter(a => a.status === 'farming');
+            const pending = unsold.filter(a => a.status === 'pending');
+
+            let pool = [...completed, ...farming, ...pending];
+
+            if (pool.length < qty) {
+                return showToast(`Không đủ acc! Chỉ còn ${pool.length}`, 'error');
+            }
+
+            // Take top N (since we prioritized array order, this picks best first)
+            const toSell = pool.slice(0, qty);
+            
+            // Batch Write
+            const batch = window.writeBatch(window.db);
+            const soldList = [];
+
+            toSell.forEach(acc => {
+                const ref = window.doc(window.db, "accounts", acc.id);
+                batch.update(ref, { 
+                    status: 'sold', 
+                    soldAt: Date.now(), 
+                    soldBy: state.currentUser.name 
+                });
+
+                // Add to History
+                const histRef = window.doc(window.collection(window.db, "history"));
+                batch.set(histRef, {
+                    accId: acc.id,
+                    username: acc.username,
+                    price: acc.price,
+                    soldAt: Date.now(),
+                    soldBy: state.currentUser.username,
+                    soldByName: state.currentUser.name
+                });
+                
+                soldList.push(acc);
+            });
+
+            await batch.commit();
+            showSellResultModal(soldList);
+        }
+
+        function showSellResultModal(list) {
+            const content = list.map(a => `${a.username}|${a.password}`).join('\n');
+            const html = `
+                <h3 class="text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2"><i class="ph ph-check-circle"></i> Mua Thành Công (${list.length})</h3>
+                <textarea class="w-full h-64 bg-slate-950 p-4 rounded-xl font-mono text-sm text-white border border-slate-800 focus:border-emerald-500 outline-none mb-4" readonly>${content}</textarea>
+                <button onclick="copyText(this.previousElementSibling.value)" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold mb-2">Copy All</button>
+                <button onclick="closeModal()" class="w-full py-2 text-slate-500 hover:text-white">Đóng</button>
+            `;
+            openModal(html);
+        }
+
+        // --- HOTMAIL GENERATOR ---
+        function generateHotmail() {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let user = '';
+            for(let i=0; i<10; i++) user += chars.charAt(Math.floor(Math.random() * chars.length));
+            user += '@hotmail.com';
+            
+            let pass = 'A'; // Strong pass req
+            for(let i=0; i<8; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            pass += '!';
+
+            document.getElementById('gen-email').innerText = user;
+            document.getElementById('gen-pass').innerText = pass;
+            document.getElementById('btn-fill-form').disabled = false;
+            document.getElementById('btn-fill-form').classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function fillForm() {
+            const u = document.getElementById('gen-email').innerText;
+            const p = document.getElementById('gen-pass').innerText;
+            if(u === '---') return;
+            document.getElementById('input-username').value = u;
+            document.getElementById('input-password').value = p;
+        }
+
+        // --- FILTERS & SEARCH ---
+        function setFilter(f) {
+            state.filter = f;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                if(b.dataset.filter === f) {
+                    b.classList.remove('text-slate-400');
+                    b.classList.add('bg-slate-700', 'text-amber-500', 'shadow');
+                } else {
+                    b.classList.add('text-slate-400');
+                    b.classList.remove('bg-slate-700', 'text-amber-500', 'shadow');
+                }
+            });
+            renderAccounts();
+        }
+
+        function handleSearch(val) {
+            state.searchQuery = val;
+            renderAccounts();
+        }
+
+        // --- ADMIN: USER MANAGEMENT ---
+        function showUserManageModal() {
+            const rows = state.users.map(u => `
+                <div class="flex items-center justify-between p-3 border-b border-slate-800 last:border-0">
+                    <div>
+                        <p class="font-bold text-white">${u.name} <span class="text-xs text-slate-500">(${u.username})</span></p>
+                        <p class="text-xs text-slate-400 uppercase">${u.role}</p>
+                    </div>
+                    ${u.id !== 'administrator' ? `
+                    <div class="flex gap-2">
+                        <button onclick="editUser('${u.id}')" class="text-blue-400 hover:text-blue-300"><i class="ph ph-pencil-simple"></i></button>
+                        <button onclick="removeUser('${u.id}')" class="text-rose-400 hover:text-rose-300"><i class="ph ph-trash"></i></button>
+                    </div>` : '<span class="text-xs text-slate-600 italic">Locked</span>'}
+                </div>
+            `).join('');
+
+            const html = `
+                <div class="p-6 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-purple-400">Quản lý Users</h2>
+                        <button onclick="closeLargeModal()" class="p-2 rounded-full hover:bg-slate-800"><i class="ph ph-x"></i></button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full overflow-hidden">
+                        <!-- List -->
+                        <div class="md:col-span-2 bg-slate-950 rounded-xl border border-slate-800 overflow-y-auto">
+                            ${rows}
+                        </div>
+
+                        <!-- Add Form -->
+                        <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 h-fit">
+                            <h3 class="font-bold mb-4 text-white">Thêm / Sửa User</h3>
+                            <form id="user-form" onsubmit="saveUser(event)" class="space-y-3">
+                                <input type="hidden" id="user-id">
+                                <input type="text" id="user-name" placeholder="Tên hiển thị" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500" required>
+                                <input type="text" id="user-username" placeholder="Username (Đăng nhập)" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500" required>
+                                <input type="text" id="user-password" placeholder="Mật khẩu" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500" required>
+                                <select id="user-role" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500">
+                                    <option value="viewer">Viewer</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                                <button type="submit" class="w-full py-2 bg-purple-600 hover:bg-purple-500 rounded font-bold text-white shadow-lg shadow-purple-500/30">Lưu User</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            openLargeModal(html);
+        }
+
+        async function saveUser(e) {
+            e.preventDefault();
+            const id = document.getElementById('user-id').value || 'user_' + Date.now();
+            const data = {
+                id: id,
+                name: document.getElementById('user-name').value,
+                username: document.getElementById('user-username').value,
+                password: document.getElementById('user-password').value,
+                role: document.getElementById('user-role').value
+            };
+            
+            await window.setDoc(window.doc(window.db, "users", id), data);
+            showToast("Đã lưu User");
+            showUserManageModal(); // Refresh modal content
+        }
+
+        async function removeUser(id) {
+            if(!confirm("Xóa user này?")) return;
+            await window.deleteDoc(window.doc(window.db, "users", id));
+            showToast("Đã xóa User");
+            showUserManageModal();
+        }
+
+        function editUser(id) {
+            const u = state.users.find(x => x.id === id);
+            document.getElementById('user-id').value = u.id;
+            document.getElementById('user-name').value = u.name;
+            document.getElementById('user-username').value = u.username;
+            document.getElementById('user-password').value = u.password;
+            document.getElementById('user-role').value = u.role;
+        }
+
+        // --- ADMIN: HISTORY ---
+        function showHistoryModal() {
+            const rows = state.history.map(h => `
+                <tr class="border-b border-slate-800 text-sm">
+                    <td class="p-3 text-slate-400 font-mono">${formatDate(h.soldAt)}</td>
+                    <td class="p-3 font-bold text-white">${h.soldByName || h.soldBy}</td>
+                    <td class="p-3 text-emerald-400 font-mono">${formatMoney(h.price || 0)}</td>
+                    <td class="p-3 text-slate-300">${h.username}</td>
+                </tr>
+            `).join('');
+
+            const html = `
+                 <div class="p-6 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-blue-400">Lịch sử Bán Acc</h2>
+                        <button onclick="closeLargeModal()" class="p-2 rounded-full hover:bg-slate-800"><i class="ph ph-x"></i></button>
+                    </div>
+                    <div class="flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-950">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-900 sticky top-0">
+                                <tr>
+                                    <th class="p-3 text-xs uppercase text-slate-500">Thời gian</th>
+                                    <th class="p-3 text-xs uppercase text-slate-500">Người bán</th>
+                                    <th class="p-3 text-xs uppercase text-slate-500">Giá</th>
+                                    <th class="p-3 text-xs uppercase text-slate-500">Username</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            openLargeModal(html);
+        }
+
+        // --- VIEWER SETTINGS ---
+        function showViewerSettingsModal() {
+            const html = `
+                <h3 class="text-xl font-bold text-white mb-4">Đổi Mật Khẩu</h3>
+                <input type="text" id="new-viewer-pass" class="w-full mb-4 p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white" placeholder="Mật khẩu mới">
+                <button onclick="changeViewerPass()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl mb-2">Lưu Thay Đổi</button>
+                <button onclick="closeModal()" class="w-full py-2 text-slate-500">Hủy</button>
+            `;
+            openModal(html);
+        }
+
+        async function changeViewerPass() {
+            const newPass = document.getElementById('new-viewer-pass').value.trim();
+            if (!newPass) return showToast("Mật khẩu trống!", "error");
+            
+            await window.updateDoc(window.doc(window.db, "users", state.currentUser.id), { password: newPass });
+            showToast("Đổi mật khẩu thành công");
+            closeModal();
+        }
+
+        // --- EDIT ACCOUNT MODAL ---
+        function editAccount(id) {
+            const acc = state.accounts.find(a => a.id === id);
+            const html = `
+                <h3 class="text-xl font-bold text-white mb-4">Sửa Account</h3>
+                <form onsubmit="saveAccountEdit(event, '${id}')" class="space-y-3">
+                    <input id="edit-user" value="${acc.username}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
+                    <input id="edit-pass" value="${acc.password}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
+                    <input id="edit-price" type="number" value="${acc.price}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
+                    <input id="edit-note" value="${acc.note || ''}" placeholder="Ghi chú" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
+                    <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl mt-2">Lưu</button>
+                </form>
+            `;
+            openModal(html);
+        }
+
+        async function saveAccountEdit(e, id) {
+            e.preventDefault();
+            const data = {
+                username: document.getElementById('edit-user').value,
+                password: document.getElementById('edit-pass').value,
+                price: Number(document.getElementById('edit-price').value),
+                note: document.getElementById('edit-note').value
+            };
+            await window.updateDoc(window.doc(window.db, "accounts", id), data);
+            showToast("Đã cập nhật");
+            closeModal();
+        }
+
+        // --- WIPE SYSTEM ---
+        function showWipeSystemModal() {
+            const html = `
+                <div class="text-center">
+                    <i class="ph ph-warning text-5xl text-rose-500 mb-2"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">RESET TOÀN BỘ?</h3>
+                    <p class="text-sm text-slate-400 mb-6">Hành động này sẽ xóa vĩnh viễn tất cả tài khoản và lịch sử giao dịch. Chỉ giữ lại Users.</p>
+                    <div class="flex gap-2">
+                        <button onclick="wipeSystem()" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl">XÓA HẾT</button>
+                        <button onclick="closeModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl">Hủy</button>
+                    </div>
+                </div>
+            `;
+            openModal(html);
+        }
+
+        async function wipeSystem() {
+            const batch = window.writeBatch(window.db);
+            
+            state.accounts.forEach(a => {
+                batch.delete(window.doc(window.db, "accounts", a.id));
+            });
+            state.history.forEach(h => {
+                batch.delete(window.doc(window.db, "history", h.id));
+            });
+            
+            await batch.commit();
+            showToast("Đã Reset hệ thống");
+            closeModal();
+        }
+
+        // --- MODAL UTILS ---
+        function openModal(content) {
+            const overlay = document.getElementById('modal-overlay');
+            const box = document.getElementById('modal-content');
+            box.innerHTML = content;
+            overlay.classList.remove('hidden');
+        }
+
+        function closeModal(e) {
+            if(e && e.target.id !== 'modal-overlay') return;
+            document.getElementById('modal-overlay').classList.add('hidden');
+        }
+
+        function openLargeModal(content) {
+            const overlay = document.getElementById('large-modal-overlay');
+            const box = document.getElementById('large-modal-content');
+            box.innerHTML = content;
+            overlay.classList.remove('hidden');
+        }
+
+        function closeLargeModal(e) {
+             if(e && e.target.id !== 'large-modal-overlay') return;
+            document.getElementById('large-modal-overlay').classList.add('hidden');
+        }
+
+    </script>
+</body>
+</html>
+
+
