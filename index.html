@@ -385,13 +385,15 @@
             sellQuantity: 1,
             pendingSellList: [],
             addMode: 'auto',
-            editMode: 'manual', // Default for edit
+            editMode: 'manual',
             pendingDeleteId: null
         };
 
         // --- HELPER FUNCTIONS ---
         const formatMoney = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-        const formatDate = (ts) => new Date(ts).toLocaleString('vi-VN');
+        
+        // FIXED: Format dates in South Korea timezone (KST - UTC+9)
+        const formatDate = (ts) => new Date(ts).toLocaleString('vi-VN', { timeZone: 'Asia/Seoul' });
         
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
@@ -414,15 +416,13 @@
         }
 
         function copyText(text) {
-            // Fallback method using textarea because navigator.clipboard is often blocked in iframes
             const textArea = document.createElement("textarea");
             textArea.value = text;
             
-            // Avoid scrolling to bottom
             textArea.style.top = "0";
             textArea.style.left = "0";
             textArea.style.position = "fixed";
-            textArea.style.opacity = "0"; // Make it invisible
+            textArea.style.opacity = "0";
             
             document.body.appendChild(textArea);
             textArea.focus();
@@ -447,7 +447,6 @@
         window.initApp = async () => {
             if(!window.isFirebaseReady) return; 
 
-            // Check Theme
             if (localStorage.getItem('theme') === 'light') {
                 state.isDark = false;
                 document.documentElement.classList.remove('dark');
@@ -457,7 +456,6 @@
             setupListeners();
             await checkAndSeedUsers();
 
-            // Refresh farming duration & Check for Completion every minute
             setInterval(() => {
                 if (state.currentUser && state.currentUser.role === 'admin') {
                     checkAutoCompletion();
@@ -484,21 +482,18 @@
         function setupListeners() {
             if (!window.db) return;
 
-            // Accounts
             window.onSnapshot(window.query(window.collection(window.db, "accounts")), (snapshot) => {
                 state.accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 state.accounts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 if (state.currentUser) renderApp();
             });
 
-            // History
             window.onSnapshot(window.query(window.collection(window.db, "history")), (snapshot) => {
                 state.history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 state.history.sort((a, b) => (b.soldAt || 0) - (a.soldAt || 0));
                 if (state.currentUser) renderApp();
             });
 
-            // Users
             window.onSnapshot(window.query(window.collection(window.db, "users")), (snapshot) => {
                 state.users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
@@ -615,7 +610,6 @@
             
             const revenue = state.history.reduce((sum, h) => sum + (Number(h.price) || 0), 0);
 
-            // Ready count badge -> Only show COMPLETED count for Sell Random
             document.getElementById('ready-count-badge').textContent = `${completed} Acc sẵn`;
 
             const statsHTML = `
@@ -717,16 +711,13 @@
                 if (acc.status === 'completed') { statusColor = 'bg-purple-900/40 text-purple-400 border border-purple-500/20'; statusText = 'Xong'; }
                 if (acc.status === 'sold') { statusColor = 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/20'; statusText = 'Đã Bán'; }
 
-                // Farming Progress
                 let farmProgress = '';
                 if (acc.status === 'farming' && acc.farmingStart) {
                     const diffMs = Date.now() - acc.farmingStart;
-                    const days = Math.min(diffMs / 86400000, 23); // Cap at 23 visually
+                    const days = Math.min(diffMs / 86400000, 23);
                     const percent = Math.min((days / 23) * 100, 100);
-                    // Use floor for whole days display in list
                     const daysDisplay = Math.floor(days);
 
-                    // Badge Logic
                     const modeBadge = acc.farmMode === 'manual' 
                         ? `<span class="ml-2 text-[9px] uppercase font-bold text-blue-400 bg-blue-900/30 px-1.5 py-0.5 rounded border border-blue-500/30">Manual</span>`
                         : `<span class="ml-2 text-[9px] uppercase font-bold text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/30">Auto</span>`;
@@ -840,13 +831,16 @@
             let initialStatus = 'pending';
             let farmingStart = null;
 
-            // Handle Manual Days Logic
-            if (state.addMode === 'manual') {
+            // FIXED: Auto mode should start farming immediately
+            if (state.addMode === 'auto') {
+                initialStatus = 'farming';
+                farmingStart = Date.now();
+            } else {
+                // Manual mode
                 const days = document.getElementById('input-days').value;
                 if (days && parseInt(days) > 0) {
                     initialStatus = 'farming';
                     farmingStart = Date.now() - (parseInt(days) * 86400000);
-                    // Check if already completed on add
                     if (parseInt(days) >= 23) initialStatus = 'completed';
                 }
             }
@@ -869,7 +863,6 @@
                 await window.addDoc(window.collection(window.db, "accounts"), docPayload);
                 showToast("Đã thêm Account!");
                 e.target.reset();
-                // Reset to Auto and 0 days
                 document.getElementById('input-days').value = 0;
                 switchFarmTab('auto');
                 generateHotmail(); 
@@ -883,7 +876,7 @@
             const updateData = { status: status };
             if (status === 'farming') {
                 updateData.farmingStart = Date.now();
-                updateData.farmMode = 'auto'; // Default to auto when manually starting
+                updateData.farmMode = 'auto';
             }
             await window.updateDoc(window.doc(window.db, "accounts", id), updateData);
             showToast(`Đã chuyển sang ${status}`);
@@ -918,7 +911,7 @@
             closeModal();
         }
 
-        // --- SELL RANDOM LOGIC (UPDATED WITH CONFIRMATION & SELECT SELLER) ---
+        // --- SELL RANDOM LOGIC ---
         function adjustSellQty(n) {
             const input = document.getElementById('sell-qty-input');
             let val = parseInt(input.value) + n;
@@ -930,7 +923,6 @@
         function preCheckSellRandom() {
              const qty = parseInt(document.getElementById('sell-qty-input').value);
             
-            // Only allow selling accounts that are 'completed'
             const completed = state.accounts.filter(a => a.status === 'completed');
 
             let pool = [...completed];
@@ -939,17 +931,14 @@
                 return showToast(`Không đủ acc XONG! Chỉ còn ${pool.length} acc`, 'error');
             }
 
-            // Take top N 
             state.pendingSellList = pool.slice(0, qty);
             
-            // Show Confirmation Modal
             showSellConfirmModal(state.pendingSellList);
         }
 
         function showSellConfirmModal(list) {
             const preview = list.map(a => `<div class="text-xs text-slate-400 font-mono truncate border-b border-slate-800 py-1">${a.username}</div>`).join('');
             
-            // Generate Salesperson options
             const sellerOptions = state.users.map(u => 
                 `<option value="${u.username}|${u.name}" ${u.id === state.currentUser.id ? 'selected' : ''}>${u.name}</option>`
             ).join('');
@@ -987,7 +976,7 @@
             const [sellerUsername, sellerName] = sellerSelect.value.split('|');
 
             const batch = window.writeBatch(window.db);
-            const soldList = [...state.pendingSellList]; // copy for display
+            const soldList = [...state.pendingSellList];
 
             state.pendingSellList.forEach(acc => {
                 const ref = window.doc(window.db, "accounts", acc.id);
@@ -997,7 +986,6 @@
                     soldBy: sellerName 
                 });
 
-                // Add to History
                 const histRef = window.doc(window.collection(window.db, "history"));
                 batch.set(histRef, {
                     accId: acc.id,
@@ -1031,7 +1019,7 @@
             for(let i=0; i<10; i++) user += chars.charAt(Math.floor(Math.random() * chars.length));
             user += '@hotmail.com';
             
-            let pass = 'A'; // Strong pass req
+            let pass = 'A';
             for(let i=0; i<8; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
             pass += '!';
 
@@ -1093,12 +1081,10 @@
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full overflow-hidden">
-                        <!-- List -->
                         <div class="md:col-span-2 bg-slate-950 rounded-xl border border-slate-800 overflow-y-auto">
                             ${rows}
                         </div>
 
-                        <!-- Add Form -->
                         <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 h-fit">
                             <h3 class="font-bold mb-4 text-white">Thêm / Sửa User</h3>
                             <form id="user-form" onsubmit="saveUser(event)" class="space-y-3">
@@ -1132,7 +1118,7 @@
             
             await window.setDoc(window.doc(window.db, "users", id), data);
             showToast("Đã lưu User");
-            showUserManageModal(); // Refresh modal content
+            showUserManageModal();
         }
 
         async function removeUser(id) {
@@ -1215,11 +1201,9 @@
                 currentDays = Math.floor(diff / 86400000); 
             }
 
-            // Determine correct initial tab based on stored farmMode
             const initialMode = acc.farmMode || 'manual'; 
             state.editMode = initialMode;
 
-            // Conditional classes based on initial mode
             const manualTabClass = initialMode === 'manual' ? 'text-emerald-400 bg-slate-700 shadow' : 'text-slate-500 hover:text-slate-300';
             const autoTabClass = initialMode === 'auto' ? 'text-emerald-400 bg-slate-700 shadow' : 'text-slate-500 hover:text-slate-300';
             
@@ -1259,7 +1243,6 @@
             openModal(html);
         }
 
-        // --- EDIT MODAL TAB LOGIC ---
         function switchEditTab(mode) {
             state.editMode = mode;
             const tabAuto = document.getElementById('edit-tab-auto');
@@ -1302,7 +1285,7 @@
                 password: document.getElementById('edit-pass').value,
                 price: Number(document.getElementById('edit-price').value),
                 note: document.getElementById('edit-note').value,
-                farmMode: state.editMode // Save current mode
+                farmMode: state.editMode
             };
 
             if (state.editMode === 'manual') {
@@ -1316,12 +1299,9 @@
                      }
                 }
             } else {
-                // Auto Mode - preserve existing start time unless missing
                 const currentAcc = state.accounts.find(a => a.id === id);
                 if (!currentAcc.farmingStart) {
                     data.farmingStart = Date.now();
-                } else {
-                    // Do nothing to start time to preserve count
                 }
                 
                 if (currentAcc.status !== 'sold' && currentAcc.status !== 'completed') {
