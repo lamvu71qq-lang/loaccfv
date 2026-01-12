@@ -124,7 +124,7 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
         /* Progress Bar Animation */
-        .progress-fill { transition: width 1s ease-in-out; }
+        .progress-fill { transition: width 0.5s ease-in-out; }
         
         body { transition: background-color 0.3s, color 0.3s; }
     </style>
@@ -217,7 +217,7 @@
                             <div class="flex items-center justify-between mb-6 relative z-10">
                                 <div>
                                     <h2 class="font-bold text-lg text-white">Bán Random</h2>
-                                    <p class="text-xs text-purple-300">Chỉ bán acc ĐÃ XONG</p>
+                                    <p class="text-xs text-purple-300">Chỉ bán acc ĐÃ XONG (Lv.50)</p>
                                 </div>
                                 <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700">
                                     <i class="ph ph-storefront text-purple-400 text-2xl"></i>
@@ -252,11 +252,6 @@
                             </div>
                             
                             <form id="add-acc-form" onsubmit="handleAddAccount(event)" class="space-y-4 relative z-10">
-                                <div class="bg-slate-950/50 p-1 rounded-lg flex text-xs font-bold mb-2">
-                                    <button type="button" id="tab-auto" onclick="switchFarmTab('auto')" class="flex-1 py-1.5 rounded-md text-emerald-400 bg-slate-800 shadow transition-all flex items-center justify-center gap-1"><i class="ph ph-robot"></i> Auto</button>
-                                    <button type="button" id="tab-manual" onclick="switchFarmTab('manual')" class="flex-1 py-1.5 rounded-md text-slate-500 hover:text-slate-300 transition-all flex items-center justify-center gap-1"><i class="ph ph-pencil-simple"></i> Thủ công</button>
-                                </div>
-
                                 <div class="space-y-3">
                                     <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Email / Username" required>
                                     <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Password" required>
@@ -264,18 +259,14 @@
                                 
                                 <input type="number" id="input-price" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Giá (VNĐ)">
 
-                                <!-- Manual Days Input (Hidden by default) -->
-                                <div id="manual-days-container" class="hidden">
-                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Ngày đã farm (Số nguyên)</label>
+                                <!-- Level Input -->
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Level (Max 50)</label>
                                     <div class="flex items-center gap-2 bg-slate-950/50 p-1.5 rounded-lg border border-slate-700/50">
-                                        <button type="button" onclick="adjustManualDays(-1)" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-minus"></i></button>
-                                        <input type="number" step="1" id="input-days" value="0" max="23" class="flex-1 bg-transparent text-center font-bold text-sm outline-none text-emerald-400">
-                                        <button type="button" onclick="adjustManualDays(1)" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-plus"></i></button>
+                                        <button type="button" onclick="adjustInputLevel(-1, 'input-level')" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-minus"></i></button>
+                                        <input type="number" step="1" id="input-level" value="1" min="1" max="50" class="flex-1 bg-transparent text-center font-bold text-sm outline-none text-emerald-400" placeholder="Level">
+                                        <button type="button" onclick="adjustInputLevel(1, 'input-level')" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-plus"></i></button>
                                     </div>
-                                </div>
-
-                                <div id="auto-badge-container" class="flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700 border-dashed py-2 text-slate-500 text-xs font-bold">
-                                    <i class="ph ph-timer mr-1"></i> Bắt đầu tính giờ từ 0
                                 </div>
                                 
                                 <input type="text" id="input-note" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Ghi chú">
@@ -384,13 +375,10 @@
             isDark: true,
             sellQuantity: 1,
             pendingSellList: [],
-            addMode: 'auto',
-            editMode: 'manual', // Default for edit
             pendingDeleteId: null
         };
 
         // --- HELPER FUNCTIONS ---
-        // FORCE KOREAN TIMEZONE
         const formatMoney = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
         const formatDate = (ts) => new Date(ts).toLocaleString('vi-VN', { timeZone: 'Asia/Seoul' });
         
@@ -415,16 +403,12 @@
         }
 
         function copyText(text) {
-            // Fallback method using textarea because navigator.clipboard is often blocked in iframes
             const textArea = document.createElement("textarea");
             textArea.value = text;
-            
-            // Avoid scrolling to bottom
             textArea.style.top = "0";
             textArea.style.left = "0";
             textArea.style.position = "fixed";
-            textArea.style.opacity = "0"; // Make it invisible
-            
+            textArea.style.opacity = "0"; 
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
@@ -458,10 +442,9 @@
             setupListeners();
             await checkAndSeedUsers();
 
-            // Refresh farming duration & Check for Completion every minute
+            // Refresh account list every minute
             setInterval(() => {
                 if (state.currentUser && state.currentUser.role === 'admin') {
-                    checkAutoCompletion();
                     renderAccounts(); 
                 }
             }, 60000);
@@ -575,28 +558,6 @@
             document.getElementById('login-password').value = '';
         }
 
-        // --- AUTO COMPLETION LOGIC ---
-        function checkAutoCompletion() {
-            const batch = window.writeBatch(window.db);
-            let hasUpdate = false;
-
-            state.accounts.forEach(acc => {
-                if (acc.status === 'farming' && acc.farmingStart) {
-                    const diffMs = Date.now() - acc.farmingStart;
-                    const days = diffMs / 86400000;
-                    if (days >= 23) {
-                        const ref = window.doc(window.db, "accounts", acc.id);
-                        batch.update(ref, { status: 'completed' });
-                        hasUpdate = true;
-                    }
-                }
-            });
-
-            if (hasUpdate) {
-                batch.commit().then(() => console.log("Auto-completed farming accounts"));
-            }
-        }
-
         // --- RENDER LOGIC ---
         function renderApp() {
             if (!state.currentUser) return;
@@ -631,7 +592,6 @@
             
             const revenue = state.history.reduce((sum, h) => sum + (Number(h.price) || 0), 0);
 
-            // Ready count badge -> Only show COMPLETED count for Sell Random
             document.getElementById('ready-count-badge').textContent = `${completed} Acc sẵn`;
 
             const statsHTML = `
@@ -703,8 +663,9 @@
             // 2. Check if we need to start farming
             const acc = state.accounts.find(a => a.id === id);
             if (acc && acc.status === 'pending') {
+                // Start farming at Level 1 immediately
                 await updateAccountStatus(id, 'farming');
-                showToast("Đã bắt đầu Farm (Auto Mode)");
+                showToast("Đã bắt đầu Farm (Lv.1)");
             }
         }
 
@@ -746,30 +707,19 @@
                 if (acc.status === 'completed') { statusColor = 'bg-purple-900/40 text-purple-400 border border-purple-500/20'; statusText = 'Xong'; }
                 if (acc.status === 'sold') { statusColor = 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/20'; statusText = 'Đã Bán'; }
 
-                // Farming Progress
+                // Farming Progress - LEVEL BASED
                 let farmProgress = '';
-                if (acc.status === 'farming' && acc.farmingStart) {
-                    const diffMs = Date.now() - acc.farmingStart;
-                    const days = Math.min(diffMs / 86400000, 23); // Cap at 23 visually
-                    const percent = Math.min((days / 23) * 100, 100);
-                    // Use floor for whole days display in list
-                    const daysDisplay = Math.floor(days);
-
-                    // Badge Logic
-                    const modeBadge = acc.farmMode === 'manual' 
-                        ? `<span class="ml-2 text-[9px] uppercase font-bold text-blue-400 bg-blue-900/30 px-1.5 py-0.5 rounded border border-blue-500/30">Manual</span>`
-                        : `<span class="ml-2 text-[9px] uppercase font-bold text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/30">Auto</span>`;
+                if (acc.status === 'farming' || acc.status === 'completed') {
+                    const level = acc.level || 1;
+                    const percent = Math.min((level / 50) * 100, 100);
 
                     farmProgress = `
                         <div class="mt-2 w-full bg-slate-950 rounded-full h-2 relative border border-slate-800 overflow-hidden">
                             <div class="h-full bg-gradient-to-r from-amber-600 to-amber-400 progress-fill rounded-full" style="width: ${percent}%"></div>
                         </div>
                         <div class="flex justify-between items-center mt-1">
-                            <div class="flex items-center">
-                                <span class="text-[10px] text-amber-500 font-bold">${daysDisplay} ngày</span>
-                                ${modeBadge}
-                            </div>
-                            <span class="text-[10px] text-slate-500">Mục tiêu: 23 ngày</span>
+                            <span class="text-[10px] text-amber-500 font-bold">Lv. ${level} / 50</span>
+                            <span class="text-[10px] text-slate-500">Target: 50</span>
                         </div>
                     `;
                 }
@@ -818,41 +768,13 @@
             });
         }
 
-        // --- UI SWITCHER FOR ADD FORM ---
-        function switchFarmTab(mode) {
-            state.addMode = mode;
-            const tabAuto = document.getElementById('tab-auto');
-            const tabManual = document.getElementById('tab-manual');
-            const manualContainer = document.getElementById('manual-days-container');
-            const autoBadge = document.getElementById('auto-badge-container');
-
-            if (mode === 'auto') {
-                tabAuto.classList.add('text-emerald-400', 'bg-slate-800', 'shadow');
-                tabAuto.classList.remove('text-slate-500');
-                tabManual.classList.remove('text-emerald-400', 'bg-slate-800', 'shadow');
-                tabManual.classList.add('text-slate-500');
-                
-                manualContainer.classList.add('hidden');
-                autoBadge.classList.remove('hidden');
-                autoBadge.classList.add('flex');
-            } else {
-                tabManual.classList.add('text-emerald-400', 'bg-slate-800', 'shadow');
-                tabManual.classList.remove('text-slate-500');
-                tabAuto.classList.remove('text-emerald-400', 'bg-slate-800', 'shadow');
-                tabAuto.classList.add('text-slate-500');
-
-                manualContainer.classList.remove('hidden');
-                autoBadge.classList.add('hidden');
-                autoBadge.classList.remove('flex');
-            }
-        }
-
-        function adjustManualDays(val) {
-            const input = document.getElementById('input-days');
-            let current = parseInt(input.value) || 0;
+        // --- ADJUST INPUT LEVEL HELPER ---
+        function adjustInputLevel(val, id) {
+            const input = document.getElementById(id);
+            let current = parseInt(input.value) || 1;
             let newVal = current + val;
-            if (newVal < 0) newVal = 0;
-            if (newVal > 23) newVal = 23;
+            if (newVal < 1) newVal = 1;
+            if (newVal > 50) newVal = 50;
             input.value = newVal;
         }
 
@@ -863,44 +785,27 @@
             const p = document.getElementById('input-password').value.trim();
             const price = document.getElementById('input-price').value;
             const note = document.getElementById('input-note').value;
+            const level = parseInt(document.getElementById('input-level').value) || 1;
             
             if (!u || !p) return showToast('Thiếu Username/Pass', 'error');
 
             let initialStatus = 'pending';
-            let farmingStart = null;
-
-            // Handle Manual Days Logic
-            if (state.addMode === 'manual') {
-                const days = document.getElementById('input-days').value;
-                if (days && parseInt(days) > 0) {
-                    initialStatus = 'farming';
-                    farmingStart = Date.now() - (parseInt(days) * 86400000);
-                    // Check if already completed on add
-                    if (parseInt(days) >= 23) initialStatus = 'completed';
-                }
-            }
+            if (level > 1) initialStatus = 'farming';
+            if (level >= 50) initialStatus = 'completed';
 
             try {
-                const docPayload = {
+                await window.addDoc(window.collection(window.db, "accounts"), {
                     username: u,
                     password: p,
                     price: Number(price) || 0,
                     note: note,
                     status: initialStatus,
-                    farmMode: state.addMode,
+                    level: level,
                     createdAt: Date.now()
-                };
-                
-                if (farmingStart) {
-                    docPayload.farmingStart = farmingStart;
-                }
-
-                await window.addDoc(window.collection(window.db, "accounts"), docPayload);
+                });
                 showToast("Đã thêm Account!");
                 e.target.reset();
-                // Reset to Auto and 0 days
-                document.getElementById('input-days').value = 0;
-                switchFarmTab('auto');
+                document.getElementById('input-level').value = 1;
                 generateHotmail(); 
             } catch (err) {
                 console.error(err);
@@ -910,13 +815,26 @@
 
         async function updateAccountStatus(id, status) {
             const updateData = { status: status };
+            
+            // If starting farm, default to level 1
             if (status === 'farming') {
-                // START AT 1 DAY (24h back) when starting fresh
-                updateData.farmingStart = Date.now() - 86400000;
-                updateData.farmMode = 'auto'; // Default to auto when manually starting
+                // We check existing first to not overwrite if level exists? 
+                // Actually the requirement says "Default 1 day when start farm"
+                // But if it was Level 10 and paused, we shouldn't reset?
+                // Let's safe guard: update level to 1 ONLY if level is undefined or 0.
+                const acc = state.accounts.find(a => a.id === id);
+                if (!acc.level || acc.level < 1) {
+                    updateData.level = 1;
+                }
             }
+            
+            // If marked done, set level 50
+            if (status === 'completed') {
+                updateData.level = 50;
+            }
+
             await window.updateDoc(window.doc(window.db, "accounts", id), updateData);
-            showToast(`Đã chuyển sang ${status}`);
+            showToast(`Đã cập nhật trạng thái`);
         }
 
         function showDeleteConfirm(id) {
@@ -948,7 +866,7 @@
             closeModal();
         }
 
-        // --- SELL RANDOM LOGIC (UPDATED WITH CONFIRMATION & SELECT SELLER) ---
+        // --- SELL RANDOM LOGIC ---
         function adjustSellQty(n) {
             const input = document.getElementById('sell-qty-input');
             let val = parseInt(input.value) + n;
@@ -959,29 +877,22 @@
 
         function preCheckSellRandom() {
              const qty = parseInt(document.getElementById('sell-qty-input').value);
-            // Prioritize: Completed -> Farming -> Pending
-            const unsold = state.accounts.filter(a => a.status !== 'sold');
-            const completed = unsold.filter(a => a.status === 'completed');
-            const farming = unsold.filter(a => a.status === 'farming');
-            const pending = unsold.filter(a => a.status === 'pending');
+            // Only allow selling 'completed'
+            const completed = state.accounts.filter(a => a.status === 'completed');
 
-            let pool = [...completed, ...farming, ...pending];
+            let pool = [...completed];
 
             if (pool.length < qty) {
-                return showToast(`Không đủ acc! Chỉ còn ${pool.length}`, 'error');
+                return showToast(`Không đủ acc XONG! Chỉ còn ${pool.length} acc`, 'error');
             }
 
-            // Take top N 
             state.pendingSellList = pool.slice(0, qty);
-            
-            // Show Confirmation Modal
             showSellConfirmModal(state.pendingSellList);
         }
 
         function showSellConfirmModal(list) {
             const preview = list.map(a => `<div class="text-xs text-slate-400 font-mono truncate border-b border-slate-800 py-1">${a.username}</div>`).join('');
             
-            // Generate Salesperson options
             const sellerOptions = state.users.map(u => 
                 `<option value="${u.username}|${u.name}" ${u.id === state.currentUser.id ? 'selected' : ''}>${u.name}</option>`
             ).join('');
@@ -990,7 +901,7 @@
                 <div class="text-center">
                     <i class="ph ph-shopping-cart-simple text-5xl text-purple-400 mb-2"></i>
                     <h3 class="text-xl font-bold text-white mb-2">Xác nhận bán?</h3>
-                    <p class="text-sm text-slate-400 mb-4">Bạn sắp bán <b>${list.length}</b> tài khoản cho khách.</p>
+                    <p class="text-sm text-slate-400 mb-4">Bạn sắp bán <b>${list.length}</b> tài khoản (Lv.50).</p>
                     
                     <div class="mb-4 text-left">
                         <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Người bán</label>
@@ -1019,7 +930,7 @@
             const [sellerUsername, sellerName] = sellerSelect.value.split('|');
 
             const batch = window.writeBatch(window.db);
-            const soldList = [...state.pendingSellList]; // copy for display
+            const soldList = [...state.pendingSellList]; 
 
             state.pendingSellList.forEach(acc => {
                 const ref = window.doc(window.db, "accounts", acc.id);
@@ -1029,7 +940,6 @@
                     soldBy: sellerName 
                 });
 
-                // Add to History
                 const histRef = window.doc(window.collection(window.db, "history"));
                 batch.set(histRef, {
                     accId: acc.id,
@@ -1241,22 +1151,7 @@
         // --- EDIT ACCOUNT MODAL ---
         function editAccount(id) {
             const acc = state.accounts.find(a => a.id === id);
-            let currentDays = 0;
-            if (acc.farmingStart) {
-                const diff = Date.now() - acc.farmingStart;
-                currentDays = Math.floor(diff / 86400000); 
-            }
-
-            // Determine correct initial tab based on stored farmMode
-            const initialMode = acc.farmMode || 'manual'; 
-            state.editMode = initialMode;
-
-            // Conditional classes based on initial mode
-            const manualTabClass = initialMode === 'manual' ? 'text-emerald-400 bg-slate-700 shadow' : 'text-slate-500 hover:text-slate-300';
-            const autoTabClass = initialMode === 'auto' ? 'text-emerald-400 bg-slate-700 shadow' : 'text-slate-500 hover:text-slate-300';
-            
-            const manualContentClass = initialMode === 'manual' ? '' : 'hidden';
-            const autoContentClass = initialMode === 'auto' ? '' : 'hidden';
+            const currentLevel = acc.level || 1;
 
             const html = `
                 <h3 class="text-xl font-bold text-white mb-4">Sửa Account</h3>
@@ -1266,21 +1161,11 @@
                     <input id="edit-price" type="number" value="${acc.price}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
                     
                     <div class="bg-slate-950/50 p-2 rounded-lg border border-slate-800">
-                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Trạng thái Farm</label>
-                        <div class="flex text-xs font-bold mb-3 bg-slate-800 p-1 rounded-md">
-                             <button type="button" id="edit-tab-manual" onclick="switchEditTab('manual')" class="flex-1 py-1.5 rounded transition-all ${manualTabClass}">Nhập Ngày</button>
-                             <button type="button" id="edit-tab-auto" onclick="switchEditTab('auto')" class="flex-1 py-1.5 rounded transition-all ${autoTabClass}">Đếm tự động</button>
-                        </div>
-
-                        <div id="edit-manual-container" class="${manualContentClass}">
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="adjustEditDays(-1)" class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-minus"></i></button>
-                                <input id="edit-days" type="number" step="1" value="${currentDays}" class="flex-1 bg-transparent text-center font-bold text-white outline-none" min="0" max="23">
-                                <button type="button" onclick="adjustEditDays(1)" class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-plus"></i></button>
-                            </div>
-                        </div>
-                        <div id="edit-auto-badge" class="text-center text-xs text-slate-400 py-2 ${autoContentClass}">
-                            <i class="ph ph-clock"></i> Tiếp tục đếm giờ hiện tại
+                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Level hiện tại</label>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="adjustInputLevel(-1, 'edit-level')" class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-minus"></i></button>
+                            <input id="edit-level" type="number" value="${currentLevel}" min="1" max="50" class="flex-1 bg-transparent text-center font-bold text-white outline-none">
+                            <button type="button" onclick="adjustInputLevel(1, 'edit-level')" class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-plus"></i></button>
                         </div>
                     </div>
 
@@ -1291,74 +1176,22 @@
             openModal(html);
         }
 
-        // --- EDIT MODAL TAB LOGIC ---
-        function switchEditTab(mode) {
-            state.editMode = mode;
-            const tabAuto = document.getElementById('edit-tab-auto');
-            const tabManual = document.getElementById('edit-tab-manual');
-            const manualContainer = document.getElementById('edit-manual-container');
-            const autoBadge = document.getElementById('edit-auto-badge');
-
-            if (mode === 'auto') {
-                tabAuto.classList.add('text-emerald-400', 'bg-slate-700', 'shadow');
-                tabAuto.classList.remove('text-slate-500', 'hover:text-slate-300');
-                tabManual.classList.remove('text-emerald-400', 'bg-slate-700', 'shadow');
-                tabManual.classList.add('text-slate-500', 'hover:text-slate-300');
-                
-                manualContainer.classList.add('hidden');
-                autoBadge.classList.remove('hidden');
-            } else {
-                tabManual.classList.add('text-emerald-400', 'bg-slate-700', 'shadow');
-                tabManual.classList.remove('text-slate-500', 'hover:text-slate-300');
-                tabAuto.classList.remove('text-emerald-400', 'bg-slate-700', 'shadow');
-                tabAuto.classList.add('text-slate-500', 'hover:text-slate-300');
-
-                manualContainer.classList.remove('hidden');
-                autoBadge.classList.add('hidden');
-            }
-        }
-
-        function adjustEditDays(val) {
-             const input = document.getElementById('edit-days');
-             let current = parseInt(input.value) || 0;
-             let newVal = current + val;
-             if (newVal < 0) newVal = 0;
-             if (newVal > 23) newVal = 23;
-             input.value = newVal;
-        }
-
         async function saveAccountEdit(e, id) {
             e.preventDefault();
+            const level = parseInt(document.getElementById('edit-level').value) || 1;
             const data = {
                 username: document.getElementById('edit-user').value,
                 password: document.getElementById('edit-pass').value,
                 price: Number(document.getElementById('edit-price').value),
                 note: document.getElementById('edit-note').value,
-                farmMode: state.editMode // Save current mode
+                level: level
             };
 
-            if (state.editMode === 'manual') {
-                const days = document.getElementById('edit-days').value;
-                if (days && parseInt(days) >= 0) {
-                     data.farmingStart = Date.now() - (parseInt(days) * 86400000);
-                     if (parseInt(days) >= 23) {
-                         data.status = 'completed';
-                     } else if (state.accounts.find(a=>a.id===id).status !== 'sold') {
-                         data.status = 'farming';
-                     }
-                }
-            } else {
-                // Auto Mode - preserve existing start time unless missing
-                const currentAcc = state.accounts.find(a => a.id === id);
-                if (!currentAcc.farmingStart) {
-                    data.farmingStart = Date.now() - 86400000; // Start at 1 day
-                } else {
-                    // Do nothing to start time to preserve count
-                }
-                
-                if (currentAcc.status !== 'sold' && currentAcc.status !== 'completed') {
-                    data.status = 'farming';
-                }
+            // Check if Level >= 50
+            if (level >= 50) {
+                data.status = 'completed';
+            } else if (state.accounts.find(a=>a.id===id).status !== 'sold') {
+                data.status = 'farming';
             }
 
             await window.updateDoc(window.doc(window.db, "accounts", id), data);
@@ -1425,5 +1258,3 @@
     </script>
 </body>
 </html>
-
-
