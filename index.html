@@ -252,6 +252,16 @@
                             </div>
                             
                             <form id="add-acc-form" onsubmit="handleAddAccount(event)" class="space-y-4 relative z-10">
+                                <!-- Category Select -->
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Loại Account</label>
+                                    <select id="input-category" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                                        <option value="Tp Trắng" selected>Tp Trắng</option>
+                                        <option value="Fv zin">Fv zin</option>
+                                        <option value="Fcvn">Fcvn</option>
+                                    </select>
+                                </div>
+
                                 <div class="space-y-3">
                                     <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Email / Username" required>
                                     <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Password" required>
@@ -313,14 +323,22 @@
                         <!-- HEADER AREA WITH SEARCH -->
                         <div class="p-4 border-b border-slate-800 bg-slate-900 space-y-3 z-10 sticky top-0">
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                                <div class="flex items-center gap-2">
-                                    <h2 class="font-bold text-lg">Kho Acc</h2>
+                                <div class="flex items-center gap-2 w-full sm:w-auto">
+                                    <h2 class="font-bold text-lg whitespace-nowrap">Kho Acc</h2>
                                     <span id="list-count-badge" class="px-2 py-0.5 rounded-md text-xs font-bold bg-slate-800 text-slate-400">0</span>
                                 </div>
-                                <!-- SEARCH BAR -->
-                                <div class="relative w-full sm:w-64 group">
-                                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors"></i>
-                                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Tìm username, note..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:border-amber-500 outline-none transition-all placeholder-slate-600 focus:bg-slate-950">
+                                <!-- SEARCH BAR & CATEGORY FILTER -->
+                                <div class="flex gap-2 w-full">
+                                    <div class="relative flex-1 group">
+                                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors"></i>
+                                        <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Tìm user, note, loại..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:border-amber-500 outline-none transition-all placeholder-slate-600 focus:bg-slate-950">
+                                    </div>
+                                    <select id="category-filter" onchange="setCategoryFilter(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-2 outline-none focus:border-amber-500">
+                                        <option value="all">Tất cả loại</option>
+                                        <option value="Tp Trắng">Tp Trắng</option>
+                                        <option value="Fv zin">Fv zin</option>
+                                        <option value="Fcvn">Fcvn</option>
+                                    </select>
                                 </div>
                             </div>
                             
@@ -371,6 +389,7 @@
             accounts: [], 
             history: [], 
             filter: 'all',
+            categoryFilter: 'all',
             searchQuery: '',
             isDark: true,
             sellQuantity: 1,
@@ -442,7 +461,7 @@
             setupListeners();
             await checkAndSeedUsers();
 
-            // Refresh account list every minute
+            // Refresh farming duration & Check for Completion every minute
             setInterval(() => {
                 if (state.currentUser && state.currentUser.role === 'admin') {
                     renderAccounts(); 
@@ -562,16 +581,24 @@
         function renderApp() {
             if (!state.currentUser) return;
             const isAdmin = state.currentUser.role === 'admin';
+            const isModerator = state.currentUser.role === 'moderator';
+            const isStaff = isAdmin || isModerator;
 
             document.getElementById('user-name-display').textContent = state.currentUser.name;
             const badge = document.getElementById('user-role-badge');
-            badge.textContent = isAdmin ? 'ADMIN' : 'VIEWER';
-            badge.className = `text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-white ${isAdmin ? 'bg-rose-500' : 'bg-blue-500'}`;
+            
+            let roleLabel = 'VIEWER';
+            let roleClass = 'bg-blue-500';
+            if(isAdmin) { roleLabel = 'ADMIN'; roleClass = 'bg-rose-500'; }
+            if(isModerator) { roleLabel = 'MOD'; roleClass = 'bg-purple-500'; }
+
+            badge.textContent = roleLabel;
+            badge.className = `text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-white ${roleClass}`;
 
             const adminEls = ['admin-controls', 'admin-list-container', 'admin-stats-container', 'admin-header-controls'];
             const viewerEls = ['viewer-placeholder', 'viewer-list-placeholder', 'viewer-stats-container', 'viewer-settings-btn'];
 
-            if (isAdmin) {
+            if (isStaff) {
                 adminEls.forEach(id => document.getElementById(id).classList.remove('hidden'));
                 viewerEls.forEach(id => document.getElementById(id).classList.add('hidden'));
                 renderStats();
@@ -674,16 +701,30 @@
             listEl.innerHTML = '';
 
             let filtered = state.accounts;
+            const role = state.currentUser.role;
             
+            // Filter by Status Tab
             if (state.filter !== 'all') {
                 filtered = filtered.filter(a => a.status === state.filter);
             }
 
+            // Filter by Category Dropdown
+            if (state.categoryFilter !== 'all') {
+                filtered = filtered.filter(a => a.category === state.categoryFilter);
+            }
+
+            // MODERATOR RESTRICTION: Hide 'farming' accounts
+            if (role === 'moderator') {
+                filtered = filtered.filter(a => a.status !== 'farming');
+            }
+
+            // Filter by Search Query
             if (state.searchQuery) {
                 const q = state.searchQuery.toLowerCase();
                 filtered = filtered.filter(a => 
                     a.username.toLowerCase().includes(q) || 
-                    (a.note && a.note.toLowerCase().includes(q))
+                    (a.note && a.note.toLowerCase().includes(q)) ||
+                    (a.category && a.category.toLowerCase().includes(q))
                 );
             }
 
@@ -707,6 +748,34 @@
                 if (acc.status === 'completed') { statusColor = 'bg-purple-900/40 text-purple-400 border border-purple-500/20'; statusText = 'Xong'; }
                 if (acc.status === 'sold') { statusColor = 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/20'; statusText = 'Đã Bán'; }
 
+                // Category Color Logic
+                let catColor = "text-slate-400 bg-slate-800";
+                if(acc.category === 'Fv zin') catColor = "text-blue-400 bg-blue-900/20 border border-blue-500/20";
+                if(acc.category === 'Fcvn') catColor = "text-orange-400 bg-orange-900/20 border border-orange-500/20";
+                if(acc.category === 'Tp Trắng') catColor = "text-slate-300 bg-slate-700/50 border border-slate-600/30";
+
+                // MODERATOR VIEW LOGIC
+                let displayUser = acc.username;
+                let displayPass = acc.password;
+                let actionButtons = '';
+
+                if (role === 'moderator') {
+                    displayUser = '••••••••';
+                    displayPass = '••••••••';
+                    // Mod only sees status badges, no actions
+                } else {
+                    // Admin Actions
+                    actionButtons = `
+                        <div class="flex gap-1">
+                             <button onclick="handleCopyAndFarm('${acc.id}', '${acc.username}|${acc.password}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors" title="Copy User|Pass & Start Farm"><i class="ph ph-copy-simple"></i></button>
+                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="editAccount('${acc.id}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-blue-400"><i class="ph ph-pencil-simple"></i></button>
+                                <button onclick="showDeleteConfirm('${acc.id}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-rose-400"><i class="ph ph-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 // Farming Progress - LEVEL BASED
                 let farmProgress = '';
                 if (acc.status === 'farming' || acc.status === 'completed') {
@@ -728,25 +797,20 @@
                 card.className = "card-hover p-4 rounded-xl border bg-slate-900 border-slate-800 transition-all group relative";
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap gap-2 items-center">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${statusColor}">${statusText}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${catColor}">${acc.category || 'Tp Trắng'}</span>
                         </div>
-                        <div class="flex gap-1">
-                             <button onclick="handleCopyAndFarm('${acc.id}', '${acc.username}|${acc.password}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors" title="Copy User|Pass & Start Farm"><i class="ph ph-copy-simple"></i></button>
-                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="editAccount('${acc.id}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-blue-400"><i class="ph ph-pencil-simple"></i></button>
-                                <button onclick="showDeleteConfirm('${acc.id}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-rose-400"><i class="ph ph-trash"></i></button>
-                            </div>
-                        </div>
+                        ${actionButtons}
                     </div>
                     <div class="space-y-1 mb-2">
                         <div class="flex items-center gap-2">
                             <i class="ph ph-user text-slate-500 text-sm"></i>
-                            <span class="font-mono font-medium text-white select-all text-sm cursor-pointer hover:text-amber-500 transition-colors" onclick="copyText('${acc.username}')">${acc.username}</span>
+                            <span class="font-mono font-medium text-white select-all text-sm cursor-pointer hover:text-amber-500 transition-colors" ${role !== 'moderator' ? `onclick="copyText('${acc.username}')"` : ''}>${displayUser}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <i class="ph ph-key text-slate-500 text-sm"></i>
-                            <span class="font-mono text-slate-400 select-all text-sm cursor-pointer hover:text-white transition-colors" onclick="copyText('${acc.password}')">${acc.password}</span>
+                            <span class="font-mono text-slate-400 select-all text-sm cursor-pointer hover:text-white transition-colors" ${role !== 'moderator' ? `onclick="copyText('${acc.password}')"` : ''}>${displayPass}</span>
                         </div>
                          ${acc.price ? `<div class="flex items-center gap-2"><i class="ph ph-currency-dollar text-slate-500 text-sm"></i><span class="text-emerald-400 font-bold text-sm">${formatMoney(acc.price)}</span></div>` : ''}
                     </div>
@@ -756,12 +820,14 @@
                     <div class="pt-3 border-t border-slate-800 flex justify-between items-center mt-2">
                         <span class="text-xs text-slate-500 italic max-w-[150px] truncate">${acc.note || 'Không có ghi chú'}</span>
                         
-                        ${acc.status !== 'sold' ? `
+                        ${acc.status !== 'sold' && role !== 'moderator' ? `
                         <div class="flex gap-1">
                             ${acc.status !== 'farming' ? `<button onclick="updateAccountStatus('${acc.id}', 'farming')" class="px-2 py-1 rounded text-[10px] font-bold bg-slate-800 hover:bg-amber-900/50 text-slate-400 hover:text-amber-400 transition-colors">FARM</button>` : ''}
                             ${acc.status !== 'completed' ? `<button onclick="updateAccountStatus('${acc.id}', 'completed')" class="px-2 py-1 rounded text-[10px] font-bold bg-slate-800 hover:bg-purple-900/50 text-slate-400 hover:text-purple-400 transition-colors">DONE</button>` : ''}
                         </div>
-                        ` : `<span class="text-[10px] text-emerald-500 font-bold">Sold by ${acc.soldBy || 'Unknown'}</span>`}
+                        ` : ''}
+                        
+                        ${acc.status === 'sold' ? `<span class="text-[10px] text-emerald-500 font-bold">Sold by ${acc.soldBy || 'Unknown'}</span>` : ''}
                     </div>
                 `;
                 listEl.appendChild(card);
@@ -786,6 +852,7 @@
             const price = document.getElementById('input-price').value;
             const note = document.getElementById('input-note').value;
             const level = parseInt(document.getElementById('input-level').value) || 1;
+            const category = document.getElementById('input-category').value;
             
             if (!u || !p) return showToast('Thiếu Username/Pass', 'error');
 
@@ -801,6 +868,7 @@
                     note: note,
                     status: initialStatus,
                     level: level,
+                    category: category,
                     createdAt: Date.now()
                 });
                 showToast("Đã thêm Account!");
@@ -816,19 +884,13 @@
         async function updateAccountStatus(id, status) {
             const updateData = { status: status };
             
-            // If starting farm, default to level 1
             if (status === 'farming') {
-                // We check existing first to not overwrite if level exists? 
-                // Actually the requirement says "Default 1 day when start farm"
-                // But if it was Level 10 and paused, we shouldn't reset?
-                // Let's safe guard: update level to 1 ONLY if level is undefined or 0.
                 const acc = state.accounts.find(a => a.id === id);
                 if (!acc.level || acc.level < 1) {
                     updateData.level = 1;
                 }
             }
             
-            // If marked done, set level 50
             if (status === 'completed') {
                 updateData.level = 50;
             }
@@ -870,6 +932,13 @@
         function adjustSellQty(n) {
             const input = document.getElementById('sell-qty-input');
             let val = parseInt(input.value) + n;
+            
+            // Moderator Limit: Max 5
+            if (state.currentUser.role === 'moderator' && val > 5) {
+                showToast("Moderator chỉ được bán tối đa 5 acc!", "error");
+                val = 5;
+            }
+            
             if (val < 1) val = 1;
             input.value = val;
             state.sellQuantity = val;
@@ -877,6 +946,12 @@
 
         function preCheckSellRandom() {
              const qty = parseInt(document.getElementById('sell-qty-input').value);
+             
+             // Double check Mod limit
+             if (state.currentUser.role === 'moderator' && qty > 5) {
+                 return showToast("Moderator chỉ được bán tối đa 5 acc!", "error");
+             }
+
             // Only allow selling 'completed'
             const completed = state.accounts.filter(a => a.status === 'completed');
 
@@ -891,7 +966,9 @@
         }
 
         function showSellConfirmModal(list) {
-            const preview = list.map(a => `<div class="text-xs text-slate-400 font-mono truncate border-b border-slate-800 py-1">${a.username}</div>`).join('');
+            // Mask previews for Moderators in modal too, until sold
+            const isMod = state.currentUser.role === 'moderator';
+            const preview = list.map(a => `<div class="text-xs text-slate-400 font-mono truncate border-b border-slate-800 py-1">${isMod ? '••••••••' : a.username}</div>`).join('');
             
             const sellerOptions = state.users.map(u => 
                 `<option value="${u.username}|${u.name}" ${u.id === state.currentUser.id ? 'selected' : ''}>${u.name}</option>`
@@ -966,48 +1043,9 @@
             openModal(html);
         }
 
-        // --- HOTMAIL GENERATOR ---
-        function generateHotmail() {
-            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-            let user = '';
-            for(let i=0; i<10; i++) user += chars.charAt(Math.floor(Math.random() * chars.length));
-            user += '@hotmail.com';
-            
-            let pass = 'A'; // Strong pass req
-            for(let i=0; i<8; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
-            pass += '!';
-
-            document.getElementById('gen-email').innerText = user;
-            document.getElementById('gen-pass').innerText = pass;
-            document.getElementById('btn-fill-form').disabled = false;
-            document.getElementById('btn-fill-form').classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-
-        function fillForm() {
-            const u = document.getElementById('gen-email').innerText;
-            const p = document.getElementById('gen-pass').innerText;
-            if(u === '---') return;
-            document.getElementById('input-username').value = u;
-            document.getElementById('input-password').value = p;
-        }
-
         // --- FILTERS & SEARCH ---
-        function setFilter(f) {
-            state.filter = f;
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                if(b.dataset.filter === f) {
-                    b.classList.remove('text-slate-400');
-                    b.classList.add('bg-slate-700', 'text-amber-500', 'shadow');
-                } else {
-                    b.classList.add('text-slate-400');
-                    b.classList.remove('bg-slate-700', 'text-amber-500', 'shadow');
-                }
-            });
-            renderAccounts();
-        }
-
-        function handleSearch(val) {
-            state.searchQuery = val;
+        function setCategoryFilter(c) {
+            state.categoryFilter = c;
             renderAccounts();
         }
 
@@ -1050,6 +1088,7 @@
                                 <input type="text" id="user-password" placeholder="Mật khẩu" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500" required>
                                 <select id="user-role" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500">
                                     <option value="viewer">Viewer</option>
+                                    <option value="moderator">Moderator</option>
                                     <option value="admin">Admin</option>
                                 </select>
                                 <button type="submit" class="w-full py-2 bg-purple-600 hover:bg-purple-500 rounded font-bold text-white shadow-lg shadow-purple-500/30">Lưu User</button>
@@ -1152,10 +1191,21 @@
         function editAccount(id) {
             const acc = state.accounts.find(a => a.id === id);
             const currentLevel = acc.level || 1;
+            const currentCat = acc.category || 'Tp Trắng';
 
             const html = `
                 <h3 class="text-xl font-bold text-white mb-4">Sửa Account</h3>
                 <form onsubmit="saveAccountEdit(event, '${id}')" class="space-y-4">
+                    <!-- Category Select in Edit -->
+                    <div class="bg-slate-950/50 p-2 rounded-lg border border-slate-800 mb-2">
+                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Loại Account</label>
+                        <select id="edit-category" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg p-2.5 outline-none focus:border-emerald-500">
+                            <option value="Tp Trắng" ${currentCat === 'Tp Trắng' ? 'selected' : ''}>Tp Trắng</option>
+                            <option value="Fv zin" ${currentCat === 'Fv zin' ? 'selected' : ''}>Fv zin</option>
+                            <option value="Fcvn" ${currentCat === 'Fcvn' ? 'selected' : ''}>Fcvn</option>
+                        </select>
+                    </div>
+
                     <input id="edit-user" value="${acc.username}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
                     <input id="edit-pass" value="${acc.password}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
                     <input id="edit-price" type="number" value="${acc.price}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
@@ -1179,12 +1229,15 @@
         async function saveAccountEdit(e, id) {
             e.preventDefault();
             const level = parseInt(document.getElementById('edit-level').value) || 1;
+            const category = document.getElementById('edit-category').value;
+            
             const data = {
                 username: document.getElementById('edit-user').value,
                 password: document.getElementById('edit-pass').value,
                 price: Number(document.getElementById('edit-price').value),
                 note: document.getElementById('edit-note').value,
-                level: level
+                level: level,
+                category: category
             };
 
             // Check if Level >= 50
