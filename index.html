@@ -180,16 +180,14 @@
                 </div>
                 <div class="flex items-center gap-2 md:gap-3">
                     <div id="admin-header-controls" class="flex gap-2">
-                        <button onclick="showWipeSystemModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-rose-500 hover:bg-slate-700 hover:text-rose-400" title="Wipe System Data"><i class="ph ph-trash text-xl"></i></button>
-                        <button onclick="showUserManageModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-purple-400 hover:bg-slate-700" title="Quản lý Users"><i class="ph ph-users-three text-xl"></i></button>
-                        <button onclick="showHistoryModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-blue-400 hover:bg-slate-700" title="Lịch sử giao dịch"><i class="ph ph-clock-counter-clockwise text-xl"></i></button>
+                        <!-- Added IDs for JS access -->
+                        <button id="btn-wipe-system" onclick="showWipeSystemModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-rose-500 hover:bg-slate-700 hover:text-rose-400" title="Wipe System Data"><i class="ph ph-trash text-xl"></i></button>
+                        <button id="btn-manage-users" onclick="showUserManageModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-purple-400 hover:bg-slate-700" title="Quản lý Users"><i class="ph ph-users-three text-xl"></i></button>
+                        <button id="btn-history" onclick="showHistoryModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-blue-400 hover:bg-slate-700" title="Lịch sử giao dịch"><i class="ph ph-clock-counter-clockwise text-xl"></i></button>
                     </div>
                     <!-- Settings for Viewer -->
                     <button id="viewer-settings-btn" onclick="showViewerSettingsModal()" class="hidden p-2.5 rounded-full transition-all bg-slate-800 text-indigo-400 hover:bg-slate-700" title="Cài đặt cá nhân">
                         <i class="ph ph-gear text-xl"></i>
-                    </button>
-                    <button onclick="toggleTheme()" class="p-2.5 rounded-full transition-all bg-slate-800 text-yellow-400 hover:bg-slate-700">
-                        <i id="theme-icon" class="ph ph-sun text-xl"></i>
                     </button>
                     <button onclick="logout()" class="p-2.5 rounded-full transition-all bg-slate-800 text-rose-400 hover:bg-slate-700" title="Đăng xuất">
                         <i class="ph ph-sign-out text-xl"></i>
@@ -241,8 +239,8 @@
                             </button>
                         </div>
 
-                        <!-- ADD ACCOUNT -->
-                        <div class="rounded-2xl p-6 shadow-sm transition-all relative overflow-hidden bg-slate-900 border-slate-800 border hover:border-slate-700">
+                        <!-- ADD ACCOUNT - Hidden for Moderator via JS -->
+                        <div id="add-account-widget" class="rounded-2xl p-6 shadow-sm transition-all relative overflow-hidden bg-slate-900 border-slate-800 border hover:border-slate-700">
                             <div class="flex items-center gap-3 mb-5 relative z-10">
                                 <div class="p-2 rounded-lg bg-emerald-900/30 text-emerald-400"><i class="ph ph-user-plus text-xl"></i></div>
                                 <div>
@@ -285,26 +283,6 @@
                                     <i class="ph ph-plus text-lg"></i> Thêm Acc
                                 </button>
                             </form>
-                        </div>
-
-                        <!-- HOTMAIL GENERATOR -->
-                        <div class="rounded-2xl p-6 shadow-sm transition-all bg-slate-900 border-slate-800 border hover:border-slate-700">
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="p-2 rounded-lg bg-blue-900/30 text-blue-400"><i class="ph ph-magic-wand text-xl"></i></div>
-                                <h2 class="font-bold text-lg">Hotmail Auto</h2>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="p-4 rounded-xl border border-dashed relative bg-slate-800 border-slate-700">
-                                    <div class="space-y-2 font-mono text-sm">
-                                        <div class="flex justify-between"><span class="text-slate-400">User:</span><span id="gen-email" class="font-semibold select-all text-white cursor-pointer hover:text-blue-400" onclick="copyText(this.innerText)">---</span></div>
-                                        <div class="flex justify-between"><span class="text-slate-400">Pass:</span><span id="gen-pass" class="font-semibold select-all text-white cursor-pointer hover:text-blue-400" onclick="copyText(this.innerText)">---</span></div>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3">
-                                    <button onclick="generateHotmail()" class="flex-1 py-2.5 rounded-xl font-medium transition-all active:scale-95 text-white bg-slate-700 hover:bg-slate-600">Random</button>
-                                    <button id="btn-fill-form" onclick="fillForm()" disabled class="flex-1 border py-2.5 rounded-xl font-medium transition-all active:scale-95 flex justify-center items-center gap-2 bg-indigo-900/40 border-indigo-700 text-indigo-300 opacity-50 cursor-not-allowed">Điền <i class="ph ph-arrow-right"></i></button>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -451,12 +429,9 @@
         window.initApp = async () => {
             if(!window.isFirebaseReady) return; 
 
-            // Check Theme
-            if (localStorage.getItem('theme') === 'light') {
-                state.isDark = false;
-                document.documentElement.classList.remove('dark');
-            }
-            updateThemeIcon();
+            // FORCE DARK MODE (Theme logic removed)
+            state.isDark = true;
+            document.documentElement.classList.add('dark');
 
             setupListeners();
             await checkAndSeedUsers();
@@ -470,18 +445,6 @@
 
             document.getElementById('loading-msg').classList.add('hidden');
         };
-
-        function toggleTheme() {
-            state.isDark = !state.isDark;
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', state.isDark ? 'dark' : 'light');
-            updateThemeIcon();
-        }
-
-        function updateThemeIcon() {
-            const icon = document.getElementById('theme-icon');
-            icon.className = state.isDark ? 'ph ph-sun text-xl' : 'ph ph-moon text-xl';
-        }
 
         // --- FIREBASE LISTENERS ---
         function setupListeners() {
@@ -601,6 +564,22 @@
             if (isStaff) {
                 adminEls.forEach(id => document.getElementById(id).classList.remove('hidden'));
                 viewerEls.forEach(id => document.getElementById(id).classList.add('hidden'));
+                
+                // MODERATOR SPECIFIC UI
+                const addWidget = document.getElementById('add-account-widget');
+                const btnWipe = document.getElementById('btn-wipe-system');
+                const btnUsers = document.getElementById('btn-manage-users');
+
+                if (isModerator) {
+                    addWidget.classList.add('hidden');
+                    btnWipe.classList.add('hidden');
+                    btnUsers.classList.add('hidden');
+                } else {
+                    addWidget.classList.remove('hidden');
+                    btnWipe.classList.remove('hidden');
+                    btnUsers.classList.remove('hidden');
+                }
+
                 renderStats();
                 renderAccounts();
             } else {
@@ -722,7 +701,7 @@
             if (state.searchQuery) {
                 const q = state.searchQuery.toLowerCase();
                 filtered = filtered.filter(a => 
-                    a.username.toLowerCase().includes(q) || 
+                    (a.username || '').toLowerCase().includes(q) || 
                     (a.note && a.note.toLowerCase().includes(q)) ||
                     (a.category && a.category.toLowerCase().includes(q))
                 );
@@ -847,6 +826,11 @@
         // --- ACCOUNT ACTIONS ---
         async function handleAddAccount(e) {
             e.preventDefault();
+            // SECURITY CHECK
+            if (state.currentUser.role !== 'admin') {
+                return showToast('Không có quyền!', 'error');
+            }
+
             const u = document.getElementById('input-username').value.trim();
             const p = document.getElementById('input-password').value.trim();
             const price = document.getElementById('input-price').value;
@@ -874,7 +858,6 @@
                 showToast("Đã thêm Account!");
                 e.target.reset();
                 document.getElementById('input-level').value = 1;
-                generateHotmail(); 
             } catch (err) {
                 console.error(err);
                 showToast("Lỗi thêm acc", "error");
@@ -1049,8 +1032,34 @@
             renderAccounts();
         }
 
+        function setFilter(f) {
+            state.filter = f;
+            
+            // UI Update
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === f) {
+                    btn.className = "filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize bg-slate-700 text-amber-500 shadow";
+                } else {
+                    btn.className = "filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200";
+                }
+            });
+
+            renderAccounts();
+        }
+        
+        // --- FIXED SEARCH ENGINE ---
+        function handleSearch(val) {
+            state.searchQuery = val.trim();
+            renderAccounts();
+        }
+
         // --- ADMIN: USER MANAGEMENT ---
         function showUserManageModal() {
+            // SECURITY CHECK
+            if (state.currentUser.role !== 'admin') {
+                return showToast('Không có quyền!', 'error');
+            }
+
             const rows = state.users.map(u => `
                 <div class="flex items-center justify-between p-3 border-b border-slate-800 last:border-0">
                     <div>
@@ -1102,6 +1111,11 @@
 
         async function saveUser(e) {
             e.preventDefault();
+            // SECURITY CHECK
+            if (state.currentUser.role !== 'admin') {
+                return showToast('Không có quyền!', 'error');
+            }
+
             const id = document.getElementById('user-id').value || 'user_' + Date.now();
             const data = {
                 id: id,
@@ -1117,6 +1131,10 @@
         }
 
         async function removeUser(id) {
+            // SECURITY CHECK
+            if (state.currentUser.role !== 'admin') {
+                return showToast('Không có quyền!', 'error');
+            }
             if(!confirm("Xóa user này?")) return;
             await window.deleteDoc(window.doc(window.db, "users", id));
             showToast("Đã xóa User");
