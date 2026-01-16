@@ -239,6 +239,26 @@
                             </button>
                         </div>
 
+                        <!-- HOTMAIL GENERATOR -->
+                        <div class="rounded-2xl p-6 shadow-sm transition-all bg-slate-900 border-slate-800 border hover:border-slate-700">
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="p-2 rounded-lg bg-blue-900/30 text-blue-400"><i class="ph ph-magic-wand text-xl"></i></div>
+                                <h2 class="font-bold text-lg">Hotmail Auto</h2>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="p-4 rounded-xl border border-dashed relative bg-slate-800 border-slate-700">
+                                    <div class="space-y-2 font-mono text-sm">
+                                        <div class="flex justify-between"><span class="text-slate-400">User:</span><span id="gen-email" class="font-semibold select-all text-white cursor-pointer hover:text-blue-400" onclick="copyText(this.innerText)">---</span></div>
+                                        <div class="flex justify-between"><span class="text-slate-400">Pass:</span><span id="gen-pass" class="font-semibold select-all text-white cursor-pointer hover:text-blue-400" onclick="copyText(this.innerText)">---</span></div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <button onclick="generateHotmail()" class="flex-1 py-2.5 rounded-xl font-medium transition-all active:scale-95 text-white bg-slate-700 hover:bg-slate-600">Random</button>
+                                    <button id="btn-fill-form" onclick="fillForm()" disabled class="flex-1 border py-2.5 rounded-xl font-medium transition-all active:scale-95 flex justify-center items-center gap-2 bg-indigo-900/40 border-indigo-700 text-indigo-300 opacity-50 cursor-not-allowed">Điền <i class="ph ph-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- ADD ACCOUNT - Hidden for Moderator via JS -->
                         <div id="add-account-widget" class="rounded-2xl p-6 shadow-sm transition-all relative overflow-hidden bg-slate-900 border-slate-800 border hover:border-slate-700">
                             <div class="flex items-center gap-3 mb-5 relative z-10">
@@ -858,10 +878,45 @@
                 showToast("Đã thêm Account!");
                 e.target.reset();
                 document.getElementById('input-level').value = 1;
+                generateHotmail(); // Auto generate next one
             } catch (err) {
                 console.error(err);
                 showToast("Lỗi thêm acc", "error");
             }
+        }
+
+        // --- HOTMAIL GENERATOR LOGIC ---
+        function generateHotmail() {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let randomStr = '';
+            for(let i=0; i<8; i++) randomStr += chars[Math.floor(Math.random() * chars.length)];
+            
+            // Add timestamp to ensure uniqueness
+            const timestamp = Date.now().toString().slice(-4);
+            const email = `bear_${randomStr}${timestamp}@hotmail.com`;
+            
+            const passChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#';
+            let pass = '';
+            for(let i=0; i<14; i++) pass += passChars[Math.floor(Math.random() * passChars.length)];
+            
+            document.getElementById('gen-email').innerText = email;
+            document.getElementById('gen-pass').innerText = pass;
+            
+            const btn = document.getElementById('btn-fill-form');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            btn.classList.add('hover:bg-indigo-900/60');
+        }
+
+        function fillForm() {
+            const e = document.getElementById('gen-email').innerText;
+            const p = document.getElementById('gen-pass').innerText;
+            
+            if(e === '---' || !e) return;
+            
+            document.getElementById('input-username').value = e;
+            document.getElementById('input-password').value = p;
+            showToast("Đã điền thông tin!");
         }
 
         async function updateAccountStatus(id, status) {
@@ -1329,3 +1384,6 @@
     </script>
 </body>
 </html>
+
+
+
