@@ -3,20 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BearAcc Pro</title>
-    <!-- Teddy Bear Icon -->
+    <title>BearAcc Pro - Final</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧸</text></svg>">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -34,77 +27,33 @@
           measurementId: "G-372P84L4GG"
         };
 
-        try {
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const auth = getAuth(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-            // Expose DB functions to global window for the main app logic
-            window.db = db;
-            window.auth = auth;
-            window.collection = collection;
-            window.doc = doc;
-            window.addDoc = addDoc;
-            window.updateDoc = updateDoc;
-            window.deleteDoc = deleteDoc;
-            window.onSnapshot = onSnapshot;
-            window.query = query;
-            window.setDoc = setDoc;
-            window.getDocs = getDocs;
-            window.getDoc = getDoc;
-            window.where = where;
-            window.writeBatch = writeBatch;
+        // Expose to window
+        window.db = db; window.auth = auth; window.collection = collection; window.doc = doc;
+        window.addDoc = addDoc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc;
+        window.onSnapshot = onSnapshot; window.query = query; window.getDocs = getDocs;
+        window.where = where; window.writeBatch = writeBatch;
 
-            // Auto sign-in
-            signInAnonymously(auth).then(() => {
-                console.log("Connected to Firebase");
-                window.isFirebaseReady = true;
-                if(window.initApp) window.initApp();
-            }).catch((error) => {
-                console.error("Firebase Auth Error", error);
-                document.getElementById('loading-msg').innerText = "Lỗi kết nối Server! (Auth Error)";
-                document.getElementById('loading-msg').className = "text-center text-rose-500 font-bold text-xs";
-            });
-
-        } catch (e) {
-            console.error("Firebase Init Error", e);
-            document.getElementById('loading-msg').innerText = "Lỗi Config Firebase!";
-            document.getElementById('loading-msg').className = "text-center text-rose-500 font-bold text-xs";
-        }
+        signInAnonymously(auth).then(() => {
+            console.log("Firebase Connected");
+            window.isFirebaseReady = true;
+            if(window.initApp) window.initApp();
+        });
     </script>
 
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
-                fontFamily: {
-                    sans: ['Inter', 'sans-serif'],
-                    mono: ['JetBrains Mono', 'monospace'],
-                },
+                fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
                 extend: {
-                    animation: {
-                        'slide-in': 'slideIn 0.4s ease-out forwards',
-                        'fade-in': 'fadeIn 0.2s ease-out forwards',
-                        'scale-in': 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                    },
+                    animation: { 'scale-in': 'scaleIn 0.3s ease-out forwards', 'fade-in': 'fadeIn 0.2s ease-out' },
                     keyframes: {
-                        slideIn: {
-                            'from': { opacity: '0', transform: 'translateY(20px)' },
-                            'to': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        fadeIn: {
-                            'from': { opacity: '0' },
-                            'to': { opacity: '1' },
-                        },
-                        scaleIn: {
-                            'from': { transform: 'scale(0.9)', opacity: '0' },
-                            'to': { transform: 'scale(1)', opacity: '1' },
-                        },
-                        popIn: {
-                            'from': { opacity: '0', transform: 'translate(-50%, -40%) scale(0.9)' },
-                            'to': { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' }
-                        }
+                        scaleIn: { 'from': { transform: 'scale(0.9)', opacity: '0' }, 'to': { transform: 'scale(1)', opacity: '1' } },
+                        fadeIn: { 'from': { opacity: '0' }, 'to': { opacity: '1' } }
                     }
                 }
             }
@@ -112,1280 +61,376 @@
     </script>
 
     <style>
-        .dark ::-webkit-scrollbar { width: 8px; }
-        .dark ::-webkit-scrollbar-track { background: #0f172a; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        
-        /* Custom scrollbar hiding for horizontal filters */
+        body { background-color: #020617; color: #f8fafc; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Progress Bar Animation */
-        .progress-fill { transition: width 0.5s ease-in-out; }
-        
-        body { transition: background-color 0.3s, color 0.3s; }
+        .filter-active { background-color: #334155; color: #fbbf24; border-color: #fbbf24; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans pb-20">
+<body class="min-h-screen pb-10">
 
-    <!-- LOGIN SCREEN -->
+    <div id="loading-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-rose-600 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-scale-in">
+            <i class="ph ph-circle-notch animate-spin text-5xl"></i>
+            <span class="font-bold text-lg">Đang tải dữ liệu Users...</span>
+        </div>
+    </div>
+
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl border bg-slate-900 border-slate-800 animate-scale-in">
-            <div class="flex flex-col items-center mb-6">
-                <!-- Teddy Bear Icon -->
-                <div class="bg-amber-600 p-4 rounded-full mb-4 shadow-lg shadow-amber-500/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 256 256">
-                        <path d="M224,96a56.06,56.06,0,0,0-56-56,8,8,0,0,0-8,8,40,40,0,0,1-80,0,8,8,0,0,0-8-8,56.06,56.06,0,0,0-56,56,8,8,0,0,0,8,8,40,40,0,0,1,33.84,18.78,56.12,56.12,0,0,0,84.32,0A40,40,0,0,1,176,104,8,8,0,0,0,224,96ZM48,96a40,40,0,0,1,28.62-38.34A56,56,0,0,0,32,96c0,13.23,7.26,24.83,18.09,31.72A40.16,40.16,0,0,1,48,96Zm174.12,32.3A56.1,56.1,0,0,0,186,171.18c4.37,8.22,6.58,16.59,6,24.23-.74,9.65-6.69,17-15.65,19.33a54.54,54.54,0,0,1-13.67,1.72c-9.1,0-19.36-2.58-29.07-7.29a8,8,0,0,0-7.22,0c-9.71,4.71-20,7.29-29.07,7.29a54.54,54.54,0,0,1-13.67-1.72c-9-2.31-14.91-9.68-15.65-19.33-.55-7.64,1.66-16,6-24.23a56,56,0,0,0,0-85.36c.7-1.32,1.44-2.61,2.22-3.86a56,56,0,0,0,145.87,49.22ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path>
-                    </svg>
+        <div class="w-full max-w-md p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl animate-scale-in">
+            <div class="flex flex-col items-center mb-8">
+                <div class="bg-amber-500 p-4 rounded-full shadow-lg mb-4">
+                    <i class="ph ph-bear text-white text-4xl"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-amber-500">BearAcc Pro</h1>
-                <p class="text-slate-400 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Firebase Live Sync</p>
+                <h1 class="text-3xl font-black text-amber-500">BearAcc Pro</h1>
+                <p class="text-slate-500 text-sm mt-1 flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Firebase Live Sync</p>
             </div>
             <form id="login-form" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-70">Username</label>
-                    <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="Nhập tên đăng nhập" autofocus autocomplete="off">
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1 ml-1">Username</label>
+                    <input type="text" id="login-username" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl outline-none focus:border-amber-500 transition-all" placeholder="Tên đăng nhập" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-70">Password</label>
-                    <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl outline-none border-2 bg-slate-800 border-slate-700 focus:border-amber-500 transition-colors placeholder-slate-500" placeholder="••••••">
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1 ml-1">Password</label>
+                    <input type="password" id="login-password" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl outline-none focus:border-amber-500 transition-all" placeholder="••••••" required>
                 </div>
-                <div id="login-error" class="hidden p-3 rounded-lg bg-rose-500/10 text-rose-500 text-sm font-bold flex items-center gap-2">
-                    <i class="ph ph-warning-circle"></i> <span>Sai tên đăng nhập hoặc mật khẩu!</span>
+                <div id="login-error" class="hidden text-rose-500 text-xs font-bold text-center p-2 bg-rose-500/10 rounded-lg italic">
+                    <i class="ph ph-warning-circle"></i> Sai tài khoản hoặc mật khẩu!
                 </div>
-                <div id="loading-msg" class="text-center text-amber-400 font-bold text-xs animate-pulse">Đang kết nối server...</div>
-                <button type="submit" id="btn-login" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Đăng Nhập</button>
+                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-4 rounded-xl shadow-lg shadow-amber-900/20 transition-all active:scale-95">ĐĂNG NHẬP</button>
             </form>
         </div>
     </div>
 
-    <!-- APP SCREEN -->
     <div id="app-screen" class="hidden">
-        <header class="backdrop-blur-md sticky top-0 z-50 border-b shadow-sm transition-colors duration-300 bg-slate-900/80 border-slate-800">
-            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+        <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="bg-amber-600 p-1.5 rounded-lg text-white shadow-lg shadow-amber-500/30 hidden sm:block">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 256 256"><path d="M224,96a56.06,56.06,0,0,0-56-56,8,8,0,0,0-8,8,40,40,0,0,1-80,0,8,8,0,0,0-8-8,56.06,56.06,0,0,0-56,56,8,8,0,0,0,8,8,40,40,0,0,1,33.84,18.78,56.12,56.12,0,0,0,84.32,0A40,40,0,0,1,176,104,8,8,0,0,0,224,96ZM48,96a40,40,0,0,1,28.62-38.34A56,56,0,0,0,32,96c0,13.23,7.26,24.83,18.09,31.72A40.16,40.16,0,0,1,48,96Zm174.12,32.3A56.1,56.1,0,0,0,186,171.18c4.37,8.22,6.58,16.59,6,24.23-.74,9.65-6.69,17-15.65,19.33a54.54,54.54,0,0,1-13.67,1.72c-9.1,0-19.36-2.58-29.07-7.29a8,8,0,0,0-7.22,0c-9.71,4.71-20,7.29-29.07,7.29a54.54,54.54,0,0,1-13.67-1.72c-9-2.31-14.91-9.68-15.65-19.33-.55-7.64,1.66-16,6-24.23a56,56,0,0,0,0-85.36c.7-1.32,1.44-2.61,2.22-3.86a56,56,0,0,0,145.87,49.22ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path></svg>
-                    </div>
+                    <i class="ph ph-bear-smile text-amber-500 text-3xl"></i>
                     <div>
-                        <h1 class="text-xl font-bold leading-none text-amber-500">BearAcc</h1>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase bg-rose-500 text-white">ADMIN</span>
-                            <span id="user-name-display" class="text-xs font-medium text-slate-400">User</span>
-                        </div>
+                        <h2 class="font-black text-lg leading-none">BearAcc</h2>
+                        <span id="display-user-role" class="text-[10px] font-bold uppercase text-slate-500">Role: Loading...</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 md:gap-3">
-                    <div id="admin-header-controls" class="flex gap-2">
-                        <button id="btn-wipe-system" onclick="showWipeSystemModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-rose-500 hover:bg-slate-700 hover:text-rose-400" title="Wipe System Data"><i class="ph ph-trash text-xl"></i></button>
-                        <button id="btn-manage-users" onclick="showUserManageModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-purple-400 hover:bg-slate-700" title="Quản lý Users"><i class="ph ph-users-three text-xl"></i></button>
-                        <button id="btn-history" onclick="showHistoryModal()" class="p-2.5 rounded-full transition-all flex items-center gap-2 bg-slate-800 text-blue-400 hover:bg-slate-700" title="Lịch sử giao dịch"><i class="ph ph-clock-counter-clockwise text-xl"></i></button>
-                    </div>
-                    <!-- Settings for Viewer -->
-                    <button id="viewer-settings-btn" onclick="showViewerSettingsModal()" class="hidden p-2.5 rounded-full transition-all bg-slate-800 text-indigo-400 hover:bg-slate-700" title="Cài đặt cá nhân">
-                        <i class="ph ph-gear text-xl"></i>
-                    </button>
-                    <button onclick="logout()" class="p-2.5 rounded-full transition-all bg-slate-800 text-rose-400 hover:bg-slate-700" title="Đăng xuất">
-                        <i class="ph ph-sign-out text-xl"></i>
-                    </button>
+                <div class="flex gap-2">
+                    <button id="admin-user-btn" onclick="showUserManageModal()" class="hidden p-2.5 rounded-full bg-slate-800 text-purple-400 hover:bg-purple-900/30"><i class="ph ph-users-three text-xl"></i></button>
+                    <button onclick="location.reload()" class="p-2.5 rounded-full bg-slate-800 text-rose-400 hover:bg-rose-900/30"><i class="ph ph-sign-out text-xl"></i></button>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
-            <!-- VIEWER STATS -->
-            <div id="viewer-stats-container" class="hidden p-6 rounded-2xl border bg-slate-900 border-slate-800 shadow-lg mb-8"></div>
-            
-            <!-- ADMIN STATS -->
-            <section id="admin-stats-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"></section>
+        <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+            <div id="stats-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <!-- SIDEBAR -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div class="lg:col-span-4 space-y-6">
-                    <div id="admin-controls" class="space-y-6">
-                        <!-- SELL RANDOM WIDGET -->
-                        <div class="rounded-2xl p-6 shadow-lg border relative overflow-hidden group bg-gradient-to-br from-purple-950 via-slate-900 to-slate-900 border-purple-500/40">
-                            <!-- Background Accent -->
-                            <div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-600/20 blur-3xl rounded-full"></div>
-                            
-                            <div class="flex items-center justify-between mb-6 relative z-10">
-                                <div>
-                                    <h2 class="font-bold text-lg text-white">Bán Random</h2>
-                                    <p class="text-xs text-purple-300">Chỉ bán acc ĐÃ XONG (Lv.50)</p>
-                                </div>
-                                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-700">
-                                    <i class="ph ph-storefront text-purple-400 text-2xl"></i>
-                                </div>
+                    <div id="admin-tools" class="hidden space-y-6">
+                        <div class="p-6 rounded-3xl bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/30 shadow-xl">
+                            <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="ph ph-lightning text-amber-400"></i> Bán Random</h3>
+                            <div class="flex items-center gap-3 mb-4">
+                                <button onclick="adjustSell(-1)" class="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold">-</button>
+                                <input type="number" id="sell-qty" value="1" class="flex-1 bg-transparent text-center text-xl font-black outline-none" min="1">
+                                <button onclick="adjustSell(1)" class="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold">+</button>
                             </div>
-                            
-                            <div class="mb-5 relative z-10">
-                                <div class="flex justify-between items-end mb-2">
-                                    <label class="text-[10px] font-bold uppercase text-slate-400">Số lượng</label>
-                                    <span id="ready-count-badge" class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-bold border border-purple-500/30">0 sẵn</span>
-                                </div>
-                                <div class="flex items-center gap-2 bg-slate-950/50 p-1.5 rounded-xl border border-slate-700/50">
-                                    <button onclick="adjustSellQty(-1)" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-minus font-bold"></i></button>
-                                    <input type="number" id="sell-qty-input" value="1" class="flex-1 bg-transparent text-center font-bold text-xl outline-none text-white" min="1">
-                                    <button onclick="adjustSellQty(1)" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-plus font-bold"></i></button>
-                                </div>
-                            </div>
-
-                            <button onclick="preCheckSellRandom()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-purple-500/30 active:scale-95 transition-all flex justify-center items-center gap-2 relative z-10">
-                                <i class="ph ph-shopping-cart-simple text-xl"></i> Bán Ngay
-                            </button>
+                            <button onclick="handleSellRandom()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95">BÁN NGAY</button>
                         </div>
 
-                        <!-- HOTMAIL GENERATOR -->
-                        <div class="rounded-2xl p-6 shadow-sm transition-all bg-slate-900 border-slate-800 border hover:border-slate-700">
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="p-2 rounded-lg bg-blue-900/30 text-blue-400"><i class="ph ph-magic-wand text-xl"></i></div>
-                                <h2 class="font-bold text-lg">Hotmail Auto</h2>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="p-4 rounded-xl border border-dashed relative bg-slate-800 border-slate-700">
-                                    <div class="space-y-2 font-mono text-sm">
-                                        <div class="flex justify-between"><span class="text-slate-400">User:</span><span id="gen-email" class="font-semibold select-all text-white cursor-pointer hover:text-blue-400" onclick="copyText(this.innerText)">---</span></div>
-                                        <div class="flex justify-between"><span class="text-slate-400">Pass:</span><span id="gen-pass" class="font-semibold select-all text-white cursor-pointer hover:text-blue-400" onclick="copyText(this.innerText)">---</span></div>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3">
-                                    <button onclick="generateHotmail()" class="flex-1 py-2.5 rounded-xl font-medium transition-all active:scale-95 text-white bg-slate-700 hover:bg-slate-600">Random</button>
-                                    <button id="btn-fill-form" onclick="fillForm()" disabled class="flex-1 border py-2.5 rounded-xl font-medium transition-all active:scale-95 flex justify-center items-center gap-2 bg-indigo-900/40 border-indigo-700 text-indigo-300 opacity-50 cursor-not-allowed">Điền <i class="ph ph-arrow-right"></i></button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ADD ACCOUNT - Hidden for Moderator via JS -->
-                        <div id="add-account-widget" class="rounded-2xl p-6 shadow-sm transition-all relative overflow-hidden bg-slate-900 border-slate-800 border hover:border-slate-700">
-                            <div class="flex items-center gap-3 mb-5 relative z-10">
-                                <div class="p-2 rounded-lg bg-emerald-900/30 text-emerald-400"><i class="ph ph-user-plus text-xl"></i></div>
-                                <div>
-                                    <h2 class="font-bold text-lg">Nhập Liệu</h2>
-                                    <p class="text-[10px] text-slate-400 uppercase font-bold">Thêm tài khoản mới</p>
-                                </div>
-                            </div>
-                            
-                            <form id="add-acc-form" onsubmit="handleAddAccount(event)" class="space-y-4 relative z-10">
-                                <!-- Category Select -->
-                                <div>
-                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Loại Account</label>
-                                    <select id="input-category" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg p-2.5 outline-none focus:border-emerald-500">
-                                        <option value="Tp Trắng" selected>Tp Trắng</option>
-                                        <option value="Fv zin">Fv zin</option>
-                                        <option value="Fcvn">Fcvn</option>
-                                    </select>
-                                </div>
-
-                                <div class="space-y-3">
-                                    <input type="text" id="input-username" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Email / Username" required>
-                                    <input type="text" id="input-password" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Password" required>
-                                </div>
-                                
-                                <input type="number" id="input-price" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Giá (VNĐ)">
-
-                                <!-- Level Input -->
-                                <div>
-                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Level (Max 50)</label>
-                                    <div class="flex items-center gap-2 bg-slate-950/50 p-1.5 rounded-lg border border-slate-700/50">
-                                        <button type="button" onclick="adjustInputLevel(-1, 'input-level')" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-minus"></i></button>
-                                        <input type="number" step="1" id="input-level" value="1" min="1" max="50" class="flex-1 bg-transparent text-center font-bold text-sm outline-none text-emerald-400" placeholder="Level">
-                                        <button type="button" onclick="adjustInputLevel(1, 'input-level')" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-plus"></i></button>
-                                    </div>
-                                </div>
-                                
-                                <input type="text" id="input-note" class="w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500/50 outline-none text-sm bg-slate-800 border-slate-700 placeholder-slate-500" placeholder="Ghi chú">
-                                
-                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95 mt-2 flex justify-center items-center gap-2">
-                                    <i class="ph ph-plus text-lg"></i> Thêm Acc
-                                </button>
+                        <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
+                            <h3 class="font-bold mb-4 flex items-center gap-2"><i class="ph ph-user-plus text-emerald-400"></i> Thêm Tài Khoản</h3>
+                            <form onsubmit="handleAddAcc(event)" class="space-y-3">
+                                <select id="acc-cat" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-sm">
+                                    <option value="Tp Trắng">Tp Trắng</option>
+                                    <option value="Fv zin">Fv zin</option>
+                                    <option value="Fcvn">Fcvn</option>
+                                </select>
+                                <input type="text" id="acc-user" placeholder="Email / Username" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-sm outline-none focus:border-emerald-500" required>
+                                <input type="text" id="acc-pass" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-sm outline-none focus:border-emerald-500" required>
+                                <input type="number" id="acc-price" placeholder="Giá (VNĐ)" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-sm outline-none focus:border-emerald-500">
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold mt-2">LƯU LẠI</button>
                             </form>
                         </div>
                     </div>
 
-                    <!-- VIEWER PLACEHOLDER -->
-                    <div id="viewer-placeholder" class="hidden h-full rounded-2xl p-8 flex flex-col items-center justify-center text-center opacity-60 border-2 border-dashed border-slate-800">
-                        <i class="ph ph-shield-check text-5xl mb-4 text-slate-500"></i>
-                        <h3 class="font-bold text-lg">Chế độ Viewer</h3>
-                        <p class="text-sm text-slate-400">Danh sách tài khoản được ẩn.</p>
-                        <p class="text-xs text-slate-500 mt-2">Liên hệ Admin để mua tài khoản.</p>
+                    <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
+                        <h3 class="font-bold mb-4 flex items-center gap-2"><i class="ph ph-magic-wand text-blue-400"></i> Hotmail Auto</h3>
+                        <div class="p-4 bg-slate-950 rounded-xl mb-3 border border-dashed border-slate-700 font-mono text-xs space-y-2">
+                            <div class="flex justify-between"><span class="text-slate-500">User:</span> <span id="gen-email" class="text-blue-400 cursor-pointer" onclick="copyText(this.innerText)">---</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Pass:</span> <span id="gen-pass" class="text-white cursor-pointer" onclick="copyText(this.innerText)">---</span></div>
+                        </div>
+                        <button onclick="genHotmail()" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-lg text-sm font-bold">RANDOM MỚI</button>
                     </div>
                 </div>
 
-                <!-- MAIN LIST -->
-                <div class="lg:col-span-8 flex flex-col h-[800px] rounded-2xl shadow-lg overflow-hidden border bg-slate-900 border-slate-800">
-                    <div id="admin-list-container" class="flex flex-col h-full">
-                        <!-- HEADER AREA WITH SEARCH -->
-                        <div class="p-4 border-b border-slate-800 bg-slate-900 space-y-3 z-10 sticky top-0">
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                                <div class="flex items-center gap-2 w-full sm:w-auto">
-                                    <h2 class="font-bold text-lg whitespace-nowrap">Kho Acc</h2>
-                                    <span id="list-count-badge" class="px-2 py-0.5 rounded-md text-xs font-bold bg-slate-800 text-slate-400">0</span>
-                                </div>
-                                <!-- SEARCH BAR & CATEGORY FILTER -->
-                                <div class="flex gap-2 w-full">
-                                    <div class="relative flex-1 group">
-                                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors"></i>
-                                        <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Tìm user, note, loại..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:border-amber-500 outline-none transition-all placeholder-slate-600 focus:bg-slate-950">
-                                    </div>
-                                    <select id="category-filter" onchange="setCategoryFilter(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-2 outline-none focus:border-amber-500">
-                                        <option value="all">Tất cả loại</option>
-                                        <option value="Tp Trắng">Tp Trắng</option>
-                                        <option value="Fv zin">Fv zin</option>
-                                        <option value="Fcvn">Fcvn</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- FILTERS -->
-                            <div class="flex p-1 rounded-lg overflow-x-auto max-w-full bg-slate-800 scrollbar-hide" id="filter-buttons">
-                                <button onclick="setFilter('all')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize bg-slate-700 text-amber-500 shadow" data-filter="all">Tất cả</button>
-                                <button onclick="setFilter('pending')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="pending">Chờ</button>
-                                <button onclick="setFilter('farming')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="farming">Đang cày</button>
-                                <button onclick="setFilter('completed')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="completed">Xong</button>
-                                <button onclick="setFilter('sold')" class="filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200" data-filter="sold">Đã bán</button>
-                            </div>
+                <div class="lg:col-span-8 flex flex-col h-[700px] bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+                    <div class="p-4 border-b border-slate-800 flex flex-wrap gap-2 items-center justify-between">
+                        <h3 class="font-bold flex items-center gap-2">Kho Acc <span id="count-badge" class="px-2 py-0.5 bg-slate-800 rounded text-[10px]">0</span></h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="search-input" oninput="doSearch(this.value)" placeholder="Tìm..." class="bg-slate-800 border border-slate-700 px-3 py-1 rounded-lg text-xs outline-none focus:border-amber-500">
+                            <select id="filter-cat" onchange="state.catFilter = this.value; renderList();" class="bg-slate-800 border border-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold">
+                                <option value="all">TẤT CẢ LOẠI</option>
+                                <option value="Tp Trắng">TP TRẮNG</option>
+                                <option value="Fv zin">FV ZIN</option>
+                                <option value="Fcvn">FCVN</option>
+                            </select>
                         </div>
-
-                        <div id="accounts-list" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-950/50"></div>
                     </div>
-                    <div id="viewer-list-placeholder" class="hidden h-full flex flex-col items-center justify-center text-slate-500">
-                        <i class="ph ph-lock-key text-6xl mb-4 opacity-20"></i>
-                        <p class="text-xl font-bold opacity-50">Dữ liệu bảo mật</p>
+                    <div class="flex p-2 gap-1 bg-slate-950/50 overflow-x-auto scrollbar-hide">
+                        <button onclick="setTab('all')" data-tab="all" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500 filter-active">Tất cả</button>
+                        <button onclick="setTab('pending')" data-tab="pending" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500">Chờ</button>
+                        <button onclick="setTab('farming')" data-tab="farming" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500">Đang cày</button>
+                        <button onclick="setTab('completed')" data-tab="completed" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500">Xong</button>
+                        <button onclick="setTab('sold')" data-tab="sold" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500">Đã bán</button>
                     </div>
+                    <div id="acc-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- MODAL OVERLAY -->
-    <div id="modal-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onclick="closeModal(event)">
-        <div id="modal-content" class="w-full max-w-sm rounded-2xl p-6 shadow-2xl border animate-scale-in bg-slate-900 border-slate-700 text-white relative" onclick="event.stopPropagation()">
-            <!-- Content Injected via JS -->
-        </div>
+    <div id="large-modal-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+        <div id="large-modal-content" class="w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden animate-scale-in"></div>
     </div>
 
-    <!-- LARGE MODAL OVERLAY -->
-    <div id="large-modal-overlay" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onclick="closeLargeModal(event)">
-        <div id="large-modal-content" class="w-full sm:max-w-3xl h-[80vh] sm:h-[600px] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl border animate-slide-in bg-slate-900 border-slate-700 text-white relative" onclick="event.stopPropagation()"></div>
-    </div>
-
-    <!-- CENTERED TOAST (NOTIFICATION) -->
-    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-6 py-4 rounded-xl shadow-2xl flex flex-col items-center justify-center gap-2 font-medium text-white transition-all duration-300 opacity-0 scale-90 invisible min-w-[200px] text-center pointer-events-none">
-        <i id="toast-icon" class="ph ph-check-circle text-4xl mb-1"></i>
-        <span id="toast-message" class="text-lg">Notification</span>
-    </div>
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl font-bold transition-all opacity-0 translate-y-5 pointer-events-none"></div>
 
     <script>
-        // --- GLOBAL STATE ---
         let state = {
-            currentUser: null,
-            users: [], 
-            accounts: [], 
-            history: [], 
-            filter: 'all',
-            categoryFilter: 'all',
-            searchQuery: '',
-            isDark: true,
-            sellQuantity: 1,
-            pendingSellList: [],
-            pendingDeleteId: null
+            currentUser: null, accounts: [], users: [], history: [],
+            tab: 'all', catFilter: 'all', search: ''
         };
 
-        // --- HELPER FUNCTIONS ---
-        const formatMoney = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-        const formatDate = (ts) => new Date(ts).toLocaleString('vi-VN', { timeZone: 'Asia/Seoul' });
-        
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const msgEl = document.getElementById('toast-message');
-            
-            msgEl.textContent = msg;
-            toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center justify-center gap-2 font-bold text-white transition-all duration-300 min-w-[220px] text-center backdrop-blur-md border border-white/10 ${type === 'success' ? 'bg-emerald-600/90' : 'bg-rose-600/90'}`;
-            icon.className = type === 'success' ? 'ph ph-check-circle text-5xl mb-2' : 'ph ph-warning-circle text-5xl mb-2';
-            
-            toast.style.opacity = '1';
-            toast.style.transform = 'translate(-50%, -50%) scale(1)';
-            toast.style.visibility = 'visible';
+        const formatMoney = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
 
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translate(-50%, -50%) scale(0.9)';
-                toast.style.visibility = 'hidden';
-            }, 2000);
+        function showToast(msg, type='success') {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.className = `fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl font-bold transition-all ${type==='success'?'bg-emerald-600':'bg-rose-600'}`;
+            t.style.opacity = '1'; t.style.transform = 'translate(-50%, 0)';
+            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, 20px)'; }, 2000);
         }
 
-        function copyText(text) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.position = "fixed";
-            textArea.style.opacity = "0"; 
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showToast("Đã copy!", "success");
-                } else {
-                    showToast("Lỗi copy (browser block)", "error");
-                }
-            } catch (err) {
-                console.error('Fallback copy failed', err);
-                showToast("Lỗi copy", "error");
-            }
-            
-            document.body.removeChild(textArea);
+        function copyText(txt) {
+            navigator.clipboard.writeText(txt);
+            showToast("Đã copy!");
         }
 
-        // --- APP INITIALIZATION ---
-        window.initApp = async () => {
-            if(!window.isFirebaseReady) return; 
-
-            // FORCE DARK MODE (Theme logic removed)
-            state.isDark = true;
-            document.documentElement.classList.add('dark');
-
-            setupListeners();
-            await checkAndSeedUsers();
-
-            // Refresh farming duration & Check for Completion every minute
-            setInterval(() => {
-                if (state.currentUser && state.currentUser.role === 'admin') {
-                    renderAccounts(); 
-                }
-            }, 60000);
-
-            document.getElementById('loading-msg').classList.add('hidden');
+        // --- AUTH & SYNC ---
+        window.initApp = () => {
+            document.getElementById('login-form').onsubmit = handleLogin;
+            
+            window.onSnapshot(window.collection(window.db, "accounts"), (snap) => {
+                state.accounts = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.createdAt - a.createdAt);
+                renderStats(); renderList();
+            });
+            window.onSnapshot(window.collection(window.db, "users"), (snap) => {
+                state.users = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            });
         };
 
-        // --- FIREBASE LISTENERS ---
-        function setupListeners() {
-            if (!window.db) return;
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value;
+            const loading = document.getElementById('loading-modal');
+            const error = document.getElementById('login-error');
 
-            // Accounts
-            window.onSnapshot(window.query(window.collection(window.db, "accounts")), (snapshot) => {
-                state.accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                state.accounts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                if (state.currentUser) renderApp();
-            });
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
 
-            // History
-            window.onSnapshot(window.query(window.collection(window.db, "history")), (snapshot) => {
-                state.history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                state.history.sort((a, b) => (b.soldAt || 0) - (a.soldAt || 0));
-                if (state.currentUser) renderApp();
-            });
-
-            // Users
-            window.onSnapshot(window.query(window.collection(window.db, "users")), (snapshot) => {
-                state.users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            try {
+                const q = window.query(window.collection(window.db, "users"), window.where("username", "==", u));
+                const snap = await window.getDocs(q);
                 
-                // AUTO LOGIN CHECK
-                if (!state.currentUser) {
-                    const savedId = localStorage.getItem('bear_user_id');
-                    if (savedId) {
-                        const found = state.users.find(u => u.id === savedId);
-                        if (found) {
-                            state.currentUser = found;
-                            document.getElementById('login-screen').classList.add('hidden');
-                            document.getElementById('app-screen').classList.remove('hidden');
-                            renderApp();
-                        }
+                let found = null;
+                snap.forEach(d => { if(d.data().password === p) found = {id: d.id, ...d.data()}; });
+
+                if(found) {
+                    state.currentUser = found;
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('app-screen').classList.remove('hidden');
+                    document.getElementById('display-user-role').innerText = `Role: ${found.role.toUpperCase()}`;
+                    if(found.role === 'admin') {
+                        document.getElementById('admin-tools').classList.remove('hidden');
+                        document.getElementById('admin-user-btn').classList.remove('hidden');
                     }
                 } else {
-                    // Sync current session if user updated
-                    const fresh = state.users.find(u => u.id === state.currentUser.id);
-                    if (fresh) {
-                        state.currentUser = fresh;
-                        renderApp();
-                    } else {
-                        logout(); 
-                    }
+                    error.classList.remove('hidden');
                 }
-            });
-        }
-
-        async function checkAndSeedUsers() {
-            if (!window.db) return;
-            const adminRef = window.doc(window.db, "users", "administrator");
-            try {
-                const adminDoc = await window.getDoc(adminRef);
-                if (!adminDoc.exists()) {
-                     await window.setDoc(adminRef, {
-                        id: 'administrator', username: 'administrator', password: '111', role: 'admin', name: 'Super Admin'
-                    });
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        // --- AUTH ---
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const uInput = document.getElementById('login-username').value.trim();
-            const pInput = document.getElementById('login-password').value.trim();
-
-            if (state.users.length === 0) {
-                 showToast("Đang tải dữ liệu Users...", "error");
-                 return;
-            }
-
-            const user = state.users.find(u => u.username.toLowerCase() === uInput.toLowerCase() && u.password === pInput);
-
-            if (user) {
-                state.currentUser = user;
-                localStorage.setItem('bear_user_id', user.id); // SAVE SESSION
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                showToast(`Xin chào ${user.name}!`);
-                renderApp();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-            }
-        });
-
-        function logout() {
-            state.currentUser = null;
-            localStorage.removeItem('bear_user_id'); // CLEAR SESSION
-            document.getElementById('app-screen').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
-        }
-
-        // --- RENDER LOGIC ---
-        function renderApp() {
-            if (!state.currentUser) return;
-            const isAdmin = state.currentUser.role === 'admin';
-            const isModerator = state.currentUser.role === 'moderator';
-            const isStaff = isAdmin || isModerator;
-
-            document.getElementById('user-name-display').textContent = state.currentUser.name;
-            const badge = document.getElementById('user-role-badge');
-            
-            let roleLabel = 'VIEWER';
-            let roleClass = 'bg-blue-500';
-            if(isAdmin) { roleLabel = 'ADMIN'; roleClass = 'bg-rose-500'; }
-            if(isModerator) { roleLabel = 'MOD'; roleClass = 'bg-purple-500'; }
-
-            badge.textContent = roleLabel;
-            badge.className = `text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-white ${roleClass}`;
-
-            const adminEls = ['admin-controls', 'admin-list-container', 'admin-stats-container', 'admin-header-controls'];
-            const viewerEls = ['viewer-placeholder', 'viewer-list-placeholder', 'viewer-stats-container', 'viewer-settings-btn'];
-
-            if (isStaff) {
-                adminEls.forEach(id => document.getElementById(id).classList.remove('hidden'));
-                viewerEls.forEach(id => document.getElementById(id).classList.add('hidden'));
-                
-                // MODERATOR SPECIFIC UI
-                const addWidget = document.getElementById('add-account-widget');
-                const btnWipe = document.getElementById('btn-wipe-system');
-                const btnUsers = document.getElementById('btn-manage-users');
-
-                if (isModerator) {
-                    addWidget.classList.add('hidden');
-                    btnWipe.classList.add('hidden');
-                    btnUsers.classList.add('hidden');
-                } else {
-                    addWidget.classList.remove('hidden');
-                    btnWipe.classList.remove('hidden');
-                    btnUsers.classList.remove('hidden');
-                }
-
-                renderStats();
-                renderAccounts();
-            } else {
-                adminEls.forEach(id => document.getElementById(id).classList.add('hidden'));
-                viewerEls.forEach(id => document.getElementById(id).classList.remove('hidden'));
-                renderViewerStats();
-            }
-        }
-
-        function renderStats() {
-            const total = state.accounts.length;
-            const sold = state.accounts.filter(a => a.status === 'sold').length;
-            const pending = state.accounts.filter(a => a.status === 'pending').length;
-            const farming = state.accounts.filter(a => a.status === 'farming').length;
-            const completed = state.accounts.filter(a => a.status === 'completed').length;
-            
-            const revenue = state.history.reduce((sum, h) => sum + (Number(h.price) || 0), 0);
-
-            document.getElementById('ready-count-badge').textContent = `${completed} Acc sẵn`;
-
-            const statsHTML = `
-                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                    <p class="text-slate-400 text-xs uppercase font-bold">Tổng Acc</p>
-                    <p class="text-2xl font-bold text-white">${total}</p>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                    <p class="text-emerald-400 text-xs uppercase font-bold">Đã Bán</p>
-                    <p class="text-2xl font-bold text-emerald-400">${sold}</p>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                    <p class="text-blue-400 text-xs uppercase font-bold">Doanh Thu</p>
-                    <p class="text-lg font-bold text-blue-400">${formatMoney(revenue)}</p>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                    <p class="text-slate-400 text-xs uppercase font-bold">Kho (Chờ)</p>
-                    <p class="text-2xl font-bold text-white">${pending}</p>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                    <p class="text-amber-400 text-xs uppercase font-bold">Đang Cày</p>
-                    <p class="text-2xl font-bold text-amber-400">${farming}</p>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                    <p class="text-purple-400 text-xs uppercase font-bold">Xong</p>
-                    <p class="text-2xl font-bold text-purple-400">${completed}</p>
-                </div>
-            `;
-            document.getElementById('admin-stats-container').innerHTML = statsHTML;
-        }
-
-        function renderViewerStats() {
-            const mySales = state.history.filter(h => h.soldBy === state.currentUser.username);
-            const count = mySales.length;
-            
-            let rate = 0.02;
-            if (count >= 50) rate = 0.07;
-            else if (count >= 20) rate = 0.05;
-
-            const totalRev = mySales.reduce((s, h) => s + (Number(h.price) || 0), 0);
-            const commission = totalRev * rate;
-
-            const html = `
-                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white">Thống Kê Cá Nhân</h2>
-                        <p class="text-slate-400 text-sm">Cập nhật theo thời gian thực</p>
-                    </div>
-                    <div class="flex gap-4 w-full md:w-auto">
-                        <div class="flex-1 md:flex-none p-4 rounded-xl bg-slate-800 text-center min-w-[120px]">
-                            <p class="text-xs text-slate-400 uppercase font-bold">Đã Bán</p>
-                            <p class="text-xl font-bold text-white">${count}</p>
-                        </div>
-                        <div class="flex-1 md:flex-none p-4 rounded-xl bg-slate-800 text-center min-w-[120px]">
-                            <p class="text-xs text-slate-400 uppercase font-bold">Hoa Hồng (${rate*100}%)</p>
-                            <p class="text-xl font-bold text-emerald-400">${formatMoney(commission)}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('viewer-stats-container').innerHTML = html;
-        }
-
-        // --- NEW FUNC: HANDLE COPY & FARM START ---
-        async function handleCopyAndFarm(id, text) {
-            // 1. Copy
-            copyText(text);
-            
-            // 2. Check if we need to start farming
-            const acc = state.accounts.find(a => a.id === id);
-            if (acc && acc.status === 'pending') {
-                // Start farming at Level 1 immediately
-                await updateAccountStatus(id, 'farming');
-                showToast("Đã bắt đầu Farm (Lv.1)");
-            }
-        }
-
-        function renderAccounts() {
-            const listEl = document.getElementById('accounts-list');
-            listEl.innerHTML = '';
-
-            let filtered = state.accounts;
-            const role = state.currentUser.role;
-            
-            // Filter by Status Tab
-            if (state.filter !== 'all') {
-                filtered = filtered.filter(a => a.status === state.filter);
-            }
-
-            // Filter by Category Dropdown
-            if (state.categoryFilter !== 'all') {
-                filtered = filtered.filter(a => a.category === state.categoryFilter);
-            }
-
-            // MODERATOR RESTRICTION: Hide 'farming' accounts
-            if (role === 'moderator') {
-                filtered = filtered.filter(a => a.status !== 'farming');
-            }
-
-            // Filter by Search Query
-            if (state.searchQuery) {
-                const q = state.searchQuery.toLowerCase();
-                filtered = filtered.filter(a => 
-                    (a.username || '').toLowerCase().includes(q) || 
-                    (a.note && a.note.toLowerCase().includes(q)) ||
-                    (a.category && a.category.toLowerCase().includes(q))
-                );
-            }
-
-            document.getElementById('list-count-badge').textContent = filtered.length;
-
-            if (filtered.length === 0) {
-                listEl.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-40 text-slate-500">
-                        <i class="ph ph-ghost text-4xl mb-2"></i>
-                        <p>Không tìm thấy tài khoản nào.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            filtered.forEach(acc => {
-                let statusColor = 'bg-slate-700 text-slate-300';
-                let statusText = acc.status;
-                if (acc.status === 'pending') { statusColor = 'bg-slate-700 text-slate-300'; statusText = 'Chờ'; }
-                if (acc.status === 'farming') { statusColor = 'bg-amber-900/40 text-amber-400 border border-amber-500/20'; statusText = 'Đang cày'; }
-                if (acc.status === 'completed') { statusColor = 'bg-purple-900/40 text-purple-400 border border-purple-500/20'; statusText = 'Xong'; }
-                if (acc.status === 'sold') { statusColor = 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/20'; statusText = 'Đã Bán'; }
-
-                // Category Color Logic
-                let catColor = "text-slate-400 bg-slate-800";
-                if(acc.category === 'Fv zin') catColor = "text-blue-400 bg-blue-900/20 border border-blue-500/20";
-                if(acc.category === 'Fcvn') catColor = "text-orange-400 bg-orange-900/20 border border-orange-500/20";
-                if(acc.category === 'Tp Trắng') catColor = "text-slate-300 bg-slate-700/50 border border-slate-600/30";
-
-                // MODERATOR VIEW LOGIC
-                let displayUser = acc.username;
-                let displayPass = acc.password;
-                let actionButtons = '';
-
-                if (role === 'moderator') {
-                    displayUser = '••••••••';
-                    displayPass = '••••••••';
-                    // Mod only sees status badges, no actions
-                } else {
-                    // Admin Actions
-                    actionButtons = `
-                        <div class="flex gap-1">
-                             <button onclick="handleCopyAndFarm('${acc.id}', '${acc.username}|${acc.password}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors" title="Copy User|Pass & Start Farm"><i class="ph ph-copy-simple"></i></button>
-                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="editAccount('${acc.id}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-blue-400"><i class="ph ph-pencil-simple"></i></button>
-                                <button onclick="showDeleteConfirm('${acc.id}')" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-rose-400"><i class="ph ph-trash"></i></button>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // Farming Progress - LEVEL BASED
-                let farmProgress = '';
-                if (acc.status === 'farming' || acc.status === 'completed') {
-                    const level = acc.level || 1;
-                    const percent = Math.min((level / 50) * 100, 100);
-
-                    farmProgress = `
-                        <div class="mt-2 w-full bg-slate-950 rounded-full h-2 relative border border-slate-800 overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-amber-600 to-amber-400 progress-fill rounded-full" style="width: ${percent}%"></div>
-                        </div>
-                        <div class="flex justify-between items-center mt-1">
-                            <span class="text-[10px] text-amber-500 font-bold">Lv. ${level} / 50</span>
-                            <span class="text-[10px] text-slate-500">Target: 50</span>
-                        </div>
-                    `;
-                }
-
-                const card = document.createElement('div');
-                card.className = "card-hover p-4 rounded-xl border bg-slate-900 border-slate-800 transition-all group relative";
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex flex-wrap gap-2 items-center">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${statusColor}">${statusText}</span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${catColor}">${acc.category || 'Tp Trắng'}</span>
-                        </div>
-                        ${actionButtons}
-                    </div>
-                    <div class="space-y-1 mb-2">
-                        <div class="flex items-center gap-2">
-                            <i class="ph ph-user text-slate-500 text-sm"></i>
-                            <span class="font-mono font-medium text-white select-all text-sm cursor-pointer hover:text-amber-500 transition-colors" ${role !== 'moderator' ? `onclick="copyText('${acc.username}')"` : ''}>${displayUser}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="ph ph-key text-slate-500 text-sm"></i>
-                            <span class="font-mono text-slate-400 select-all text-sm cursor-pointer hover:text-white transition-colors" ${role !== 'moderator' ? `onclick="copyText('${acc.password}')"` : ''}>${displayPass}</span>
-                        </div>
-                         ${acc.price ? `<div class="flex items-center gap-2"><i class="ph ph-currency-dollar text-slate-500 text-sm"></i><span class="text-emerald-400 font-bold text-sm">${formatMoney(acc.price)}</span></div>` : ''}
-                    </div>
-
-                    ${farmProgress}
-                    
-                    <div class="pt-3 border-t border-slate-800 flex justify-between items-center mt-2">
-                        <span class="text-xs text-slate-500 italic max-w-[150px] truncate">${acc.note || 'Không có ghi chú'}</span>
-                        
-                        ${acc.status !== 'sold' && role !== 'moderator' ? `
-                        <div class="flex gap-1">
-                            ${acc.status !== 'farming' ? `<button onclick="updateAccountStatus('${acc.id}', 'farming')" class="px-2 py-1 rounded text-[10px] font-bold bg-slate-800 hover:bg-amber-900/50 text-slate-400 hover:text-amber-400 transition-colors">FARM</button>` : ''}
-                            ${acc.status !== 'completed' ? `<button onclick="updateAccountStatus('${acc.id}', 'completed')" class="px-2 py-1 rounded text-[10px] font-bold bg-slate-800 hover:bg-purple-900/50 text-slate-400 hover:text-purple-400 transition-colors">DONE</button>` : ''}
-                        </div>
-                        ` : ''}
-                        
-                        ${acc.status === 'sold' ? `<span class="text-[10px] text-emerald-500 font-bold">Sold by ${acc.soldBy || 'Unknown'}</span>` : ''}
-                    </div>
-                `;
-                listEl.appendChild(card);
-            });
-        }
-
-        // --- ADJUST INPUT LEVEL HELPER ---
-        function adjustInputLevel(val, id) {
-            const input = document.getElementById(id);
-            let current = parseInt(input.value) || 1;
-            let newVal = current + val;
-            if (newVal < 1) newVal = 1;
-            if (newVal > 50) newVal = 50;
-            input.value = newVal;
-        }
-
-        // --- ACCOUNT ACTIONS ---
-        async function handleAddAccount(e) {
-            e.preventDefault();
-            // SECURITY CHECK
-            if (state.currentUser.role !== 'admin') {
-                return showToast('Không có quyền!', 'error');
-            }
-
-            const u = document.getElementById('input-username').value.trim();
-            const p = document.getElementById('input-password').value.trim();
-            const price = document.getElementById('input-price').value;
-            const note = document.getElementById('input-note').value;
-            const level = parseInt(document.getElementById('input-level').value) || 1;
-            const category = document.getElementById('input-category').value;
-            
-            if (!u || !p) return showToast('Thiếu Username/Pass', 'error');
-
-            let initialStatus = 'pending';
-            if (level > 1) initialStatus = 'farming';
-            if (level >= 50) initialStatus = 'completed';
-
-            try {
-                await window.addDoc(window.collection(window.db, "accounts"), {
-                    username: u,
-                    password: p,
-                    price: Number(price) || 0,
-                    note: note,
-                    status: initialStatus,
-                    level: level,
-                    category: category,
-                    createdAt: Date.now()
-                });
-                showToast("Đã thêm Account!");
-                e.target.reset();
-                document.getElementById('input-level').value = 1;
-                generateHotmail(); // Auto generate next one
-            } catch (err) {
-                console.error(err);
-                showToast("Lỗi thêm acc", "error");
-            }
-        }
-
-        // --- HOTMAIL GENERATOR LOGIC ---
-        function generateHotmail() {
-            const chars = 'abcdefghijklmnopqrstuvwxyz';
-            let randomStr = '';
-            // Start with a letter
-            randomStr += chars[Math.floor(Math.random() * chars.length)];
-            
-            const allChars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-            for(let i=0; i<9; i++) randomStr += allChars[Math.floor(Math.random() * allChars.length)];
-            
-            // Add timestamp to ensure uniqueness
-            const timestamp = Date.now().toString().slice(-4);
-            const email = `${randomStr}${timestamp}@hotmail.com`;
-            
-            const passChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#';
-            let pass = '';
-            for(let i=0; i<14; i++) pass += passChars[Math.floor(Math.random() * passChars.length)];
-            
-            document.getElementById('gen-email').innerText = email;
-            document.getElementById('gen-pass').innerText = pass;
-            
-            const btn = document.getElementById('btn-fill-form');
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            btn.classList.add('hover:bg-indigo-900/60');
-        }
-
-        function fillForm() {
-            const e = document.getElementById('gen-email').innerText;
-            const p = document.getElementById('gen-pass').innerText;
-            
-            if(e === '---' || !e) return;
-            
-            document.getElementById('input-username').value = e;
-            document.getElementById('input-password').value = p;
-            showToast("Đã điền thông tin!");
-        }
-
-        async function updateAccountStatus(id, status) {
-            const updateData = { status: status };
-            
-            if (status === 'farming') {
-                const acc = state.accounts.find(a => a.id === id);
-                if (!acc.level || acc.level < 1) {
-                    updateData.level = 1;
-                }
-            }
-            
-            if (status === 'completed') {
-                updateData.level = 50;
-            }
-
-            await window.updateDoc(window.doc(window.db, "accounts", id), updateData);
-            showToast(`Đã cập nhật trạng thái`);
-        }
-
-        function showDeleteConfirm(id) {
-            state.pendingDeleteId = id;
-            const html = `
-                <div class="text-center">
-                    <i class="ph ph-trash text-5xl text-rose-500 mb-2"></i>
-                    <h3 class="text-xl font-bold text-white mb-2">Xóa tài khoản?</h3>
-                    <p class="text-sm text-slate-400 mb-6">Hành động này không thể hoàn tác.</p>
-                    <div class="flex gap-2">
-                        <button onclick="executeDelete()" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl">Xóa Ngay</button>
-                        <button onclick="closeModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl">Hủy</button>
-                    </div>
-                </div>
-            `;
-            openModal(html);
-        }
-
-        async function executeDelete() {
-            if(!state.pendingDeleteId) return;
-            try {
-                await window.deleteDoc(window.doc(window.db, "accounts", state.pendingDeleteId));
-                showToast("Đã xóa tài khoản");
             } catch(e) {
                 console.error(e);
-                showToast("Lỗi xóa account", "error");
+                showToast("Lỗi kết nối Firebase!", "error");
+            } finally {
+                loading.classList.add('hidden'); // CHỐT: Đóng modal đỏ tại đây
             }
-            state.pendingDeleteId = null;
-            closeModal();
         }
 
-        // --- SELL RANDOM LOGIC ---
-        function adjustSellQty(n) {
-            const input = document.getElementById('sell-qty-input');
-            let val = parseInt(input.value) + n;
-            
-            // Moderator Limit: Max 5
-            if (state.currentUser.role === 'moderator' && val > 5) {
-                showToast("Moderator chỉ được bán tối đa 5 acc!", "error");
-                val = 5;
-            }
-            
-            if (val < 1) val = 1;
-            input.value = val;
-            state.sellQuantity = val;
-        }
-
-        function preCheckSellRandom() {
-             const qty = parseInt(document.getElementById('sell-qty-input').value);
-             
-             // Double check Mod limit
-             if (state.currentUser.role === 'moderator' && qty > 5) {
-                 return showToast("Moderator chỉ được bán tối đa 5 acc!", "error");
-             }
-
-            // Only allow selling 'completed'
-            const completed = state.accounts.filter(a => a.status === 'completed');
-
-            let pool = [...completed];
-
-            if (pool.length < qty) {
-                return showToast(`Không đủ acc XONG! Chỉ còn ${pool.length} acc`, 'error');
-            }
-
-            state.pendingSellList = pool.slice(0, qty);
-            showSellConfirmModal(state.pendingSellList);
-        }
-
-        function showSellConfirmModal(list) {
-            // Mask previews for Moderators in modal too, until sold
-            const isMod = state.currentUser.role === 'moderator';
-            const preview = list.map(a => `<div class="text-xs text-slate-400 font-mono truncate border-b border-slate-800 py-1">${isMod ? '••••••••' : a.username}</div>`).join('');
-            
-            const sellerOptions = state.users.map(u => 
-                `<option value="${u.username}|${u.name}" ${u.id === state.currentUser.id ? 'selected' : ''}>${u.name}</option>`
-            ).join('');
-
-            const html = `
-                <div class="text-center">
-                    <i class="ph ph-shopping-cart-simple text-5xl text-purple-400 mb-2"></i>
-                    <h3 class="text-xl font-bold text-white mb-2">Xác nhận bán?</h3>
-                    <p class="text-sm text-slate-400 mb-4">Bạn sắp bán <b>${list.length}</b> tài khoản (Lv.50).</p>
-                    
-                    <div class="mb-4 text-left">
-                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Người bán</label>
-                        <select id="select-seller" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg p-2.5 outline-none focus:border-purple-500">
-                            ${sellerOptions}
-                        </select>
-                    </div>
-
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-left mb-6 max-h-[150px] overflow-y-auto">
-                        ${preview}
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button onclick="executeSellRandom()" class="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-lg shadow-purple-500/20">Xác Nhận</button>
-                        <button onclick="closeModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl">Hủy</button>
-                    </div>
-                </div>
-            `;
-            openModal(html);
-        }
-
-        async function executeSellRandom() {
-            if (state.pendingSellList.length === 0) return closeModal();
-
-            const sellerSelect = document.getElementById('select-seller');
-            const [sellerUsername, sellerName] = sellerSelect.value.split('|');
-
-            const batch = window.writeBatch(window.db);
-            const soldList = [...state.pendingSellList]; 
-
-            state.pendingSellList.forEach(acc => {
-                const ref = window.doc(window.db, "accounts", acc.id);
-                batch.update(ref, { 
-                    status: 'sold', 
-                    soldAt: Date.now(), 
-                    soldBy: sellerName 
-                });
-
-                const histRef = window.doc(window.collection(window.db, "history"));
-                batch.set(histRef, {
-                    accId: acc.id,
-                    username: acc.username,
-                    price: acc.price,
-                    soldAt: Date.now(),
-                    soldBy: sellerUsername,
-                    soldByName: sellerName
-                });
-            });
-
-            await batch.commit();
-            showSellResultModal(soldList);
-        }
-
-        function showSellResultModal(list) {
-            const content = list.map(a => `${a.username}|${a.password}`).join('\n');
-            const html = `
-                <h3 class="text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2"><i class="ph ph-check-circle"></i> Mua Thành Công (${list.length})</h3>
-                <textarea class="w-full h-64 bg-slate-950 p-4 rounded-xl font-mono text-sm text-white border border-slate-800 focus:border-emerald-500 outline-none mb-4" readonly>${content}</textarea>
-                <button onclick="copyText(this.previousElementSibling.value)" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold mb-2">Copy All</button>
-                <button onclick="closeModal()" class="w-full py-2 text-slate-500 hover:text-white">Đóng</button>
-            `;
-            openModal(html);
-        }
-
-        // --- FILTERS & SEARCH ---
-        function setCategoryFilter(c) {
-            state.categoryFilter = c;
-            renderAccounts();
-        }
-
-        function setFilter(f) {
-            state.filter = f;
-            
-            // UI Update
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if(btn.dataset.filter === f) {
-                    btn.className = "filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize bg-slate-700 text-amber-500 shadow";
-                } else {
-                    btn.className = "filter-btn px-3 py-1.5 rounded-md text-xs font-bold capitalize text-slate-400 hover:text-slate-200";
-                }
-            });
-
-            renderAccounts();
-        }
-        
-        // --- FIXED SEARCH ENGINE ---
-        function handleSearch(val) {
-            state.searchQuery = val.trim();
-            renderAccounts();
-        }
-
-        // --- ADMIN: USER MANAGEMENT ---
-        function showUserManageModal() {
-            // SECURITY CHECK
-            if (state.currentUser.role !== 'admin') {
-                return showToast('Không có quyền!', 'error');
-            }
-
-            const rows = state.users.map(u => `
-                <div class="flex items-center justify-between p-3 border-b border-slate-800 last:border-0">
-                    <div>
-                        <p class="font-bold text-white">${u.name} <span class="text-xs text-slate-500">(${u.username})</span></p>
-                        <p class="text-xs text-slate-400 uppercase">${u.role}</p>
-                    </div>
-                    ${u.id !== 'administrator' ? `
-                    <div class="flex gap-2">
-                        <button onclick="editUser('${u.id}')" class="text-blue-400 hover:text-blue-300"><i class="ph ph-pencil-simple"></i></button>
-                        <button onclick="removeUser('${u.id}')" class="text-rose-400 hover:text-rose-300"><i class="ph ph-trash"></i></button>
-                    </div>` : '<span class="text-xs text-slate-600 italic">Locked</span>'}
+        // --- DASHBOARD LOGIC ---
+        function renderStats() {
+            const grid = document.getElementById('stats-grid');
+            const metrics = [
+                { lab: 'Tất cả', val: state.accounts.length, color: 'slate' },
+                { lab: 'Chờ', val: state.accounts.filter(a=>a.status==='pending').length, color: 'amber' },
+                { lab: 'Đang cày', val: state.accounts.filter(a=>a.status==='farming').length, color: 'blue' },
+                { lab: 'Xong', val: state.accounts.filter(a=>a.status==='completed').length, color: 'emerald' },
+                { lab: 'Doanh thu', val: formatMoney(state.accounts.filter(a=>a.status==='sold').reduce((s,a)=>s+(a.price||0), 0)), color: 'rose', full: true }
+            ];
+            grid.innerHTML = metrics.map(m => `
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl ${m.full?'col-span-2 md:col-span-1':''}">
+                    <div class="text-[10px] font-bold uppercase text-slate-500 mb-1">${m.lab}</div>
+                    <div class="text-xl font-black text-${m.color}-500">${m.val}</div>
                 </div>
             `).join('');
+        }
 
-            const html = `
-                <div class="p-6 h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-purple-400">Quản lý Users</h2>
-                        <button onclick="closeLargeModal()" class="p-2 rounded-full hover:bg-slate-800"><i class="ph ph-x"></i></button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full overflow-hidden">
-                        <!-- List -->
-                        <div class="md:col-span-2 bg-slate-950 rounded-xl border border-slate-800 overflow-y-auto">
-                            ${rows}
+        function renderList() {
+            const container = document.getElementById('acc-list');
+            const filtered = state.accounts.filter(a => {
+                const matchTab = state.tab === 'all' || a.status === state.tab;
+                const matchCat = state.catFilter === 'all' || a.category === state.catFilter;
+                const matchSearch = a.username.toLowerCase().includes(state.search.toLowerCase());
+                return matchTab && matchCat && matchSearch;
+            });
+
+            document.getElementById('count-badge').innerText = filtered.length;
+            container.innerHTML = filtered.map(a => `
+                <div class="bg-slate-950/50 border border-slate-800 p-4 rounded-2xl flex flex-col gap-3 group">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-400">${a.category}</span>
+                            <div class="mt-1 font-mono font-bold text-amber-500 cursor-pointer hover:underline" onclick="copyText('${a.username}')">${a.username}</div>
                         </div>
-
-                        <!-- Add Form -->
-                        <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 h-fit">
-                            <h3 class="font-bold mb-4 text-white">Thêm / Sửa User</h3>
-                            <form id="user-form" onsubmit="saveUser(event)" class="space-y-3">
-                                <input type="hidden" id="user-id">
-                                <input type="text" id="user-name" placeholder="Tên hiển thị" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500" required>
-                                <input type="text" id="user-username" placeholder="Username (Đăng nhập)" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500" required>
-                                <input type="text" id="user-password" placeholder="Mật khẩu" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500" required>
-                                <select id="user-role" class="w-full p-2 rounded bg-slate-900 border border-slate-700 text-sm outline-none focus:border-purple-500">
-                                    <option value="viewer">Viewer</option>
-                                    <option value="moderator">Moderator</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                                <button type="submit" class="w-full py-2 bg-purple-600 hover:bg-purple-500 rounded font-bold text-white shadow-lg shadow-purple-500/30">Lưu User</button>
-                            </form>
+                        <div class="text-right">
+                            <div class="text-sm font-black text-emerald-500">${formatMoney(a.price||0)}</div>
+                            <div class="text-[10px] text-slate-600 font-bold uppercase">Tạo: ${new Date(a.createdAt).toLocaleDateString()}</div>
                         </div>
                     </div>
-                </div>
-            `;
-            openLargeModal(html);
-        }
-
-        async function saveUser(e) {
-            e.preventDefault();
-            // SECURITY CHECK
-            if (state.currentUser.role !== 'admin') {
-                return showToast('Không có quyền!', 'error');
-            }
-
-            const id = document.getElementById('user-id').value || 'user_' + Date.now();
-            const data = {
-                id: id,
-                name: document.getElementById('user-name').value,
-                username: document.getElementById('user-username').value,
-                password: document.getElementById('user-password').value,
-                role: document.getElementById('user-role').value
-            };
-            
-            await window.setDoc(window.doc(window.db, "users", id), data);
-            showToast("Đã lưu User");
-            showUserManageModal(); // Refresh modal content
-        }
-
-        async function removeUser(id) {
-            // SECURITY CHECK
-            if (state.currentUser.role !== 'admin') {
-                return showToast('Không có quyền!', 'error');
-            }
-            if(!confirm("Xóa user này?")) return;
-            await window.deleteDoc(window.doc(window.db, "users", id));
-            showToast("Đã xóa User");
-            showUserManageModal();
-        }
-
-        function editUser(id) {
-            const u = state.users.find(x => x.id === id);
-            document.getElementById('user-id').value = u.id;
-            document.getElementById('user-name').value = u.name;
-            document.getElementById('user-username').value = u.username;
-            document.getElementById('user-password').value = u.password;
-            document.getElementById('user-role').value = u.role;
-        }
-
-        // --- ADMIN: HISTORY ---
-        function showHistoryModal() {
-            const rows = state.history.map(h => `
-                <tr class="border-b border-slate-800 text-sm">
-                    <td class="p-3 text-slate-400 font-mono">${formatDate(h.soldAt)}</td>
-                    <td class="p-3 font-bold text-white">${h.soldByName || h.soldBy}</td>
-                    <td class="p-3 text-emerald-400 font-mono">${formatMoney(h.price || 0)}</td>
-                    <td class="p-3 text-slate-300">${h.username}</td>
-                </tr>
-            `).join('');
-
-            const html = `
-                 <div class="p-6 h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-blue-400">Lịch sử Bán Acc</h2>
-                        <button onclick="closeLargeModal()" class="p-2 rounded-full hover:bg-slate-800"><i class="ph ph-x"></i></button>
-                    </div>
-                    <div class="flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-950">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-slate-900 sticky top-0">
-                                <tr>
-                                    <th class="p-3 text-xs uppercase text-slate-500">Thời gian</th>
-                                    <th class="p-3 text-xs uppercase text-slate-500">Người bán</th>
-                                    <th class="p-3 text-xs uppercase text-slate-500">Giá</th>
-                                    <th class="p-3 text-xs uppercase text-slate-500">Username</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            openLargeModal(html);
-        }
-
-        // --- VIEWER SETTINGS ---
-        function showViewerSettingsModal() {
-            const html = `
-                <h3 class="text-xl font-bold text-white mb-4">Đổi Mật Khẩu</h3>
-                <input type="text" id="new-viewer-pass" class="w-full mb-4 p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white" placeholder="Mật khẩu mới">
-                <button onclick="changeViewerPass()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl mb-2">Lưu Thay Đổi</button>
-                <button onclick="closeModal()" class="w-full py-2 text-slate-500">Hủy</button>
-            `;
-            openModal(html);
-        }
-
-        async function changeViewerPass() {
-            const newPass = document.getElementById('new-viewer-pass').value.trim();
-            if (!newPass) return showToast("Mật khẩu trống!", "error");
-            
-            await window.updateDoc(window.doc(window.db, "users", state.currentUser.id), { password: newPass });
-            showToast("Đổi mật khẩu thành công");
-            closeModal();
-        }
-
-        // --- EDIT ACCOUNT MODAL ---
-        function editAccount(id) {
-            const acc = state.accounts.find(a => a.id === id);
-            const currentLevel = acc.level || 1;
-            const currentCat = acc.category || 'Tp Trắng';
-
-            const html = `
-                <h3 class="text-xl font-bold text-white mb-4">Sửa Account</h3>
-                <form onsubmit="saveAccountEdit(event, '${id}')" class="space-y-4">
-                    <!-- Category Select in Edit -->
-                    <div class="bg-slate-950/50 p-2 rounded-lg border border-slate-800 mb-2">
-                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Loại Account</label>
-                        <select id="edit-category" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg p-2.5 outline-none focus:border-emerald-500">
-                            <option value="Tp Trắng" ${currentCat === 'Tp Trắng' ? 'selected' : ''}>Tp Trắng</option>
-                            <option value="Fv zin" ${currentCat === 'Fv zin' ? 'selected' : ''}>Fv zin</option>
-                            <option value="Fcvn" ${currentCat === 'Fcvn' ? 'selected' : ''}>Fcvn</option>
+                    ${state.currentUser.role === 'admin' ? `
+                    <div class="flex items-center gap-2 pt-2 border-t border-slate-800/50">
+                        <select onchange="updateAccStatus('${a.id}', this.value)" class="bg-slate-800 text-[10px] font-bold p-1 rounded-lg outline-none">
+                            <option value="pending" ${a.status==='pending'?'selected':''}>⏳ CHỜ</option>
+                            <option value="farming" ${a.status==='farming'?'selected':''}>⚔️ CÀY</option>
+                            <option value="completed" ${a.status==='completed'?'selected':''}>✅ XONG</option>
+                            <option value="sold" ${a.status==='sold'?'selected':''}>💰 BÁN</option>
                         </select>
-                    </div>
-
-                    <input id="edit-user" value="${acc.username}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
-                    <input id="edit-pass" value="${acc.password}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
-                    <input id="edit-price" type="number" value="${acc.price}" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
-                    
-                    <div class="bg-slate-950/50 p-2 rounded-lg border border-slate-800">
-                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Level hiện tại</label>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="adjustInputLevel(-1, 'edit-level')" class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-minus"></i></button>
-                            <input id="edit-level" type="number" value="${currentLevel}" min="1" max="50" class="flex-1 bg-transparent text-center font-bold text-white outline-none">
-                            <button type="button" onclick="adjustInputLevel(1, 'edit-level')" class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 text-white transition-colors active:scale-95"><i class="ph ph-plus"></i></button>
-                        </div>
-                    </div>
-
-                    <input id="edit-note" value="${acc.note || ''}" placeholder="Ghi chú" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl outline-none text-white text-sm">
-                    <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl mt-2">Lưu Thay Đổi</button>
-                </form>
-            `;
-            openModal(html);
-        }
-
-        async function saveAccountEdit(e, id) {
-            e.preventDefault();
-            const level = parseInt(document.getElementById('edit-level').value) || 1;
-            const category = document.getElementById('edit-category').value;
-            
-            const data = {
-                username: document.getElementById('edit-user').value,
-                password: document.getElementById('edit-pass').value,
-                price: Number(document.getElementById('edit-price').value),
-                note: document.getElementById('edit-note').value,
-                level: level,
-                category: category
-            };
-
-            // Check if Level >= 50
-            if (level >= 50) {
-                data.status = 'completed';
-            } else if (state.accounts.find(a=>a.id===id).status !== 'sold') {
-                data.status = 'farming';
-            }
-
-            await window.updateDoc(window.doc(window.db, "accounts", id), data);
-            showToast("Đã cập nhật");
-            closeModal();
-        }
-
-        // --- WIPE SYSTEM ---
-        function showWipeSystemModal() {
-            const html = `
-                <div class="text-center">
-                    <i class="ph ph-warning text-5xl text-rose-500 mb-2"></i>
-                    <h3 class="text-xl font-bold text-white mb-2">RESET TOÀN BỘ?</h3>
-                    <p class="text-sm text-slate-400 mb-6">Hành động này sẽ xóa vĩnh viễn tất cả tài khoản và lịch sử giao dịch. Chỉ giữ lại Users.</p>
-                    <div class="flex gap-2">
-                        <button onclick="wipeSystem()" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl">XÓA HẾT</button>
-                        <button onclick="closeModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl">Hủy</button>
-                    </div>
+                        <div class="flex-1"></div>
+                        <button onclick="delAcc('${a.id}')" class="text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-lg opacity-0 group-hover:opacity-100"><i class="ph ph-trash"></i></button>
+                    </div>` : ''}
                 </div>
-            `;
-            openModal(html);
+            `).join('');
         }
 
-        async function wipeSystem() {
-            const batch = window.writeBatch(window.db);
-            
-            state.accounts.forEach(a => {
-                batch.delete(window.doc(window.db, "accounts", a.id));
+        // --- BUSINESS ACTIONS ---
+        window.handleAddAcc = async (e) => {
+            e.preventDefault();
+            const data = {
+                category: document.getElementById('acc-cat').value,
+                username: document.getElementById('acc-user').value.trim(),
+                password: document.getElementById('acc-pass').value.trim(),
+                price: parseInt(document.getElementById('acc-price').value) || 0,
+                status: 'pending', createdAt: Date.now()
+            };
+            await window.addDoc(window.collection(window.db, "accounts"), data);
+            showToast("Đã thêm!"); e.target.reset();
+        };
+
+        window.updateAccStatus = async (id, s) => {
+            await window.updateDoc(window.doc(window.db, "accounts", id), { status: s });
+            showToast("Đã cập nhật!");
+        };
+
+        window.delAcc = async (id) => {
+            if(confirm("Xóa tài khoản này?")) {
+                await window.deleteDoc(window.doc(window.db, "accounts", id));
+                showToast("Đã xóa!");
+            }
+        };
+
+        window.adjustSell = (v) => {
+            let el = document.getElementById('sell-qty');
+            el.value = Math.max(1, parseInt(el.value) + v);
+        };
+
+        window.handleSellRandom = async () => {
+            const qty = parseInt(document.getElementById('sell-qty').value);
+            const ready = state.accounts.filter(a => a.status === 'completed');
+            if(ready.length < qty) return showToast(`Không đủ acc (Còn ${ready.length})`, "error");
+
+            if(confirm(`Bán ${qty} acc ngẫu nhiên?`)) {
+                const batch = window.writeBatch(window.db);
+                ready.slice(0, qty).forEach(a => {
+                    batch.update(window.doc(window.db, "accounts", a.id), { status: 'sold' });
+                });
+                await batch.commit();
+                showToast(`Đã bán ${qty} tài khoản!`);
+            }
+        };
+
+        window.setTab = (t) => {
+            state.tab = t;
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.toggle('filter-active', b.dataset.tab === t);
             });
-            state.history.forEach(h => {
-                batch.delete(window.doc(window.db, "history", h.id));
-            });
-            
-            await batch.commit();
-            showToast("Đã Reset hệ thống");
-            closeModal();
-        }
+            renderList();
+        };
 
-        // --- MODAL UTILS ---
-        function openModal(content) {
-            const overlay = document.getElementById('modal-overlay');
-            const box = document.getElementById('modal-content');
-            box.innerHTML = content;
-            overlay.classList.remove('hidden');
-        }
+        window.doSearch = (v) => { state.search = v; renderList(); };
 
-        function closeModal(e) {
-            if(e && e.target.id !== 'modal-overlay') return;
-            document.getElementById('modal-overlay').classList.add('hidden');
-        }
+        window.genHotmail = () => {
+            const u = Math.random().toString(36).slice(2, 10) + "@hotmail.com";
+            const p = Math.random().toString(36).slice(2, 10).toUpperCase() + "!";
+            document.getElementById('gen-email').innerText = u;
+            document.getElementById('gen-pass').innerText = p;
+        };
 
-        function openLargeModal(content) {
+        // --- USER MANAGEMENT ---
+        window.showUserManageModal = () => {
             const overlay = document.getElementById('large-modal-overlay');
-            const box = document.getElementById('large-modal-content');
-            box.innerHTML = content;
+            const content = document.getElementById('large-modal-content');
             overlay.classList.remove('hidden');
-        }
+            content.innerHTML = `
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-black flex items-center gap-2"><i class="ph ph-users text-purple-500"></i> Quản lý Users</h2>
+                        <button onclick="document.getElementById('large-modal-overlay').classList.add('hidden')" class="text-slate-500 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
+                    </div>
+                    <form onsubmit="createUser(event)" class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-6 p-4 bg-slate-800 rounded-2xl">
+                        <input type="text" id="n-user" placeholder="User" class="bg-slate-900 p-2 rounded-lg text-xs outline-none focus:border-purple-500 border border-slate-700" required>
+                        <input type="text" id="n-pass" placeholder="Pass" class="bg-slate-900 p-2 rounded-lg text-xs outline-none focus:border-purple-500 border border-slate-700" required>
+                        <select id="n-role" class="bg-slate-900 p-2 rounded-lg text-xs border border-slate-700">
+                            <option value="viewer">Viewer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button class="bg-purple-600 font-bold text-xs rounded-lg py-2">Thêm</button>
+                    </form>
+                    <div class="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                        ${state.users.map(u => `
+                            <div class="flex justify-between items-center p-3 bg-slate-950/50 border border-slate-800 rounded-xl">
+                                <div><span class="font-bold">${u.username}</span> <span class="text-[10px] px-1 bg-indigo-900 text-indigo-300 rounded">${u.role}</span></div>
+                                <button onclick="delUser('${u.id}', '${u.username}')" class="text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-lg"><i class="ph ph-trash"></i></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        };
 
-        function closeLargeModal(e) {
-             if(e && e.target.id !== 'large-modal-overlay') return;
-            document.getElementById('large-modal-overlay').classList.add('hidden');
-        }
+        window.createUser = async (e) => {
+            e.preventDefault();
+            await window.addDoc(window.collection(window.db, "users"), {
+                username: document.getElementById('n-user').value.trim(),
+                password: document.getElementById('n-pass').value.trim(),
+                role: document.getElementById('n-role').value
+            });
+            showToast("Đã tạo user!"); showUserManageModal();
+        };
+
+        window.delUser = async (id, name) => {
+            if(name === state.currentUser.username) return showToast("Không thể tự xóa mình!", "error");
+            if(confirm(`Xóa user ${name}?`)) {
+                await window.deleteDoc(window.doc(window.db, "users", id));
+                showUserManageModal();
+            }
+        };
 
     </script>
 </body>
 </html>
-
-
