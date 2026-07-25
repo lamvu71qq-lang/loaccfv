@@ -1,436 +1,502 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BearAcc Pro - Final</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧸</text></svg>">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { 
-            getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, setDoc, getDocs, getDoc, where, writeBatch 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyBXY_kuplXAslH11t4rLRVo0-kyqmt4m3E",
-          authDomain: "lo-acc-fv.firebaseapp.com",
-          projectId: "lo-acc-fv",
-          storageBucket: "lo-acc-fv.firebasestorage.app",
-          messagingSenderId: "757484054386",
-          appId: "1:757484054386:web:a4d7825732c72183ec9feb",
-          measurementId: "G-372P84L4GG"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // Expose to window
-        window.db = db; window.auth = auth; window.collection = collection; window.doc = doc;
-        window.addDoc = addDoc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc;
-        window.onSnapshot = onSnapshot; window.query = query; window.getDocs = getDocs;
-        window.where = where; window.writeBatch = writeBatch;
-
-        signInAnonymously(auth).then(() => {
-            console.log("Firebase Connected");
-            window.isFirebaseReady = true;
-            if(window.initApp) window.initApp();
-        });
-    </script>
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                extend: {
-                    animation: { 'scale-in': 'scaleIn 0.3s ease-out forwards', 'fade-in': 'fadeIn 0.2s ease-out' },
-                    keyframes: {
-                        scaleIn: { 'from': { transform: 'scale(0.9)', opacity: '0' }, 'to': { transform: 'scale(1)', opacity: '1' } },
-                        fadeIn: { 'from': { opacity: '0' }, 'to': { opacity: '1' } }
-                    }
-                }
-            }
-        }
-    </script>
-
+    <title>Hệ Thống Up Tài Nguyên Kho LSR</title>
     <style>
-        body { background-color: #020617; color: #f8fafc; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .filter-active { background-color: #334155; color: #fbbf24; border-color: #fbbf24; }
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #ef4444;
+            --section-bg: #f1f5f9;
+            --item-bg: #ffffff;
+        }
+
+        /* Dark Mode variables */
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --border-color: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --section-bg: #334155;
+            --item-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover { background-color: var(--primary-hover); }
+
+        .btn-dark {
+            background-color: var(--section-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-check {
+            background-color: #10b981;
+        }
+        .btn-check:hover { background-color: #059669; }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+
+        /* Card Form */
+        .form-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        /* Khung chọn thẻ LSR */
+        .lsr-section {
+            background: var(--section-bg);
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .lsr-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .lsr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .lsr-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: var(--item-bg);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .lsr-item label { font-size: 0.85rem; font-weight: 600; }
+        .lsr-item input {
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        /* Bảng Admin */
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .admin-toolbar {
+            padding: 16px;
+            background: var(--section-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        th { background-color: var(--section-bg); }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            background: var(--section-bg);
+            border: 1px solid var(--border-color);
+            margin: 2px;
+        }
+
+        /* Modal Đăng nhập Admin */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            width: 320px;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-content h3 { margin-bottom: 16px; }
+        .modal-content input { width: 100%; margin-bottom: 12px; }
     </style>
 </head>
-<body class="min-h-screen pb-10">
+<body>
 
-    <div id="loading-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div class="bg-rose-600 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-scale-in">
-            <i class="ph ph-circle-notch animate-spin text-5xl"></i>
-            <span class="font-bold text-lg">Đang tải dữ liệu Users...</span>
-        </div>
-    </div>
-
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="w-full max-w-md p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl animate-scale-in">
-            <div class="flex flex-col items-center mb-8">
-                <div class="bg-amber-500 p-4 rounded-full shadow-lg mb-4">
-                    <i class="ph ph-bear text-white text-4xl"></i>
-                </div>
-                <h1 class="text-3xl font-black text-amber-500">BearAcc Pro</h1>
-                <p class="text-slate-500 text-sm mt-1 flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Firebase Live Sync</p>
-            </div>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1 ml-1">Username</label>
-                    <input type="text" id="login-username" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl outline-none focus:border-amber-500 transition-all" placeholder="Tên đăng nhập" required>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1 ml-1">Password</label>
-                    <input type="password" id="login-password" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl outline-none focus:border-amber-500 transition-all" placeholder="••••••" required>
-                </div>
-                <div id="login-error" class="hidden text-rose-500 text-xs font-bold text-center p-2 bg-rose-500/10 rounded-lg italic">
-                    <i class="ph ph-warning-circle"></i> Sai tài khoản hoặc mật khẩu!
-                </div>
-                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-4 rounded-xl shadow-lg shadow-amber-900/20 transition-all active:scale-95">ĐĂNG NHẬP</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="app-screen" class="hidden">
-        <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 p-4">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <i class="ph ph-bear-smile text-amber-500 text-3xl"></i>
-                    <div>
-                        <h2 class="font-black text-lg leading-none">BearAcc</h2>
-                        <span id="display-user-role" class="text-[10px] font-bold uppercase text-slate-500">Role: Loading...</span>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button id="admin-user-btn" onclick="showUserManageModal()" class="hidden p-2.5 rounded-full bg-slate-800 text-purple-400 hover:bg-purple-900/30"><i class="ph ph-users-three text-xl"></i></button>
-                    <button onclick="location.reload()" class="p-2.5 rounded-full bg-slate-800 text-rose-400 hover:bg-rose-900/30"><i class="ph ph-sign-out text-xl"></i></button>
-                </div>
+    <div class="container">
+        <header>
+            <h1>Nạp Tài Nguyên Kho LSR</h1>
+            <div class="header-btns">
+                <button class="btn btn-dark" onclick="toggleDarkMode()">🌙 Giao diện</button>
+                <button class="btn" id="loginBtn" onclick="openLoginModal()">🔑 Admin</button>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-            <div id="stats-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-4 space-y-6">
-                    <div id="admin-tools" class="hidden space-y-6">
-                        <div class="p-6 rounded-3xl bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/30 shadow-xl">
-                            <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="ph ph-lightning text-amber-400"></i> Bán Random</h3>
-                            <div class="flex items-center gap-3 mb-4">
-                                <button onclick="adjustSell(-1)" class="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold">-</button>
-                                <input type="number" id="sell-qty" value="1" class="flex-1 bg-transparent text-center text-xl font-black outline-none" min="1">
-                                <button onclick="adjustSell(1)" class="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center font-bold">+</button>
-                            </div>
-                            <button onclick="handleSellRandom()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95">BÁN NGAY</button>
-                        </div>
-
-                        <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
-                            <h3 class="font-bold mb-4 flex items-center gap-2"><i class="ph ph-user-plus text-emerald-400"></i> Thêm Tài Khoản</h3>
-                            <form onsubmit="handleAddAcc(event)" class="space-y-3">
-                                <select id="acc-cat" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-sm">
-                                    <option value="Tp Trắng">Tp Trắng</option>
-                                    <option value="Fv zin">Fv zin</option>
-                                    <option value="Fcvn">Fcvn</option>
-                                </select>
-                                <input type="text" id="acc-user" placeholder="Email / Username" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-sm outline-none focus:border-emerald-500" required>
-                                <input type="text" id="acc-pass" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-sm outline-none focus:border-emerald-500" required>
-                                <input type="number" id="acc-price" placeholder="Giá (VNĐ)" class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg text-sm outline-none focus:border-emerald-500">
-                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold mt-2">LƯU LẠI</button>
-                            </form>
-                        </div>
+        <!-- FORM GỬI ĐƠN (Dành cho khách/người dùng) -->
+        <section class="form-card">
+            <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Tạo Đơn Nạp Kho</h2>
+            <form id="upForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="username">Tài Khoản / ID Game</label>
+                        <input type="text" id="username" placeholder="Nhập tài khoản" required>
                     </div>
-
-                    <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
-                        <h3 class="font-bold mb-4 flex items-center gap-2"><i class="ph ph-magic-wand text-blue-400"></i> Hotmail Auto</h3>
-                        <div class="p-4 bg-slate-950 rounded-xl mb-3 border border-dashed border-slate-700 font-mono text-xs space-y-2">
-                            <div class="flex justify-between"><span class="text-slate-500">User:</span> <span id="gen-email" class="text-blue-400 cursor-pointer" onclick="copyText(this.innerText)">---</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Pass:</span> <span id="gen-pass" class="text-white cursor-pointer" onclick="copyText(this.innerText)">---</span></div>
-                        </div>
-                        <button onclick="genHotmail()" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-lg text-sm font-bold">RANDOM MỚI</button>
+                    <div class="form-group">
+                        <label for="password">Mật Khẩu</label>
+                        <input type="text" id="password" placeholder="Nhập mật khẩu" required>
                     </div>
                 </div>
 
-                <div class="lg:col-span-8 flex flex-col h-[700px] bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-                    <div class="p-4 border-b border-slate-800 flex flex-wrap gap-2 items-center justify-between">
-                        <h3 class="font-bold flex items-center gap-2">Kho Acc <span id="count-badge" class="px-2 py-0.5 bg-slate-800 rounded text-[10px]">0</span></h3>
-                        <div class="flex gap-2">
-                            <input type="text" id="search-input" oninput="doSearch(this.value)" placeholder="Tìm..." class="bg-slate-800 border border-slate-700 px-3 py-1 rounded-lg text-xs outline-none focus:border-amber-500">
-                            <select id="filter-cat" onchange="state.catFilter = this.value; renderList();" class="bg-slate-800 border border-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold">
-                                <option value="all">TẤT CẢ LOẠI</option>
-                                <option value="Tp Trắng">TP TRẮNG</option>
-                                <option value="Fv zin">FV ZIN</option>
-                                <option value="Fcvn">FCVN</option>
-                            </select>
+                <div class="lsr-section">
+                    <div class="lsr-title">
+                        <span>Số Lượng Thẻ LSR:</span>
+                        <span id="totalBadge" style="color: var(--primary);">Tổng: 0 thẻ</span>
+                    </div>
+                    <div class="lsr-grid">
+                        <div class="lsr-item">
+                            <label for="capheny">Capheny</label>
+                            <input type="number" class="lsr-input" id="capheny" min="0" value="0">
+                        </div>
+                        <div class="lsr-item">
+                            <label for="dieuthuyen">Điêu Thuyền</label>
+                            <input type="number" class="lsr-input" id="dieuthuyen" min="0" value="0">
+                        </div>
+                        <div class="lsr-item">
+                            <label for="valhein">Valhein</label>
+                            <input type="number" class="lsr-input" id="valhein" min="0" value="0">
+                        </div>
+                        <div class="lsr-item">
+                            <label for="liliana">Liliana</label>
+                            <input type="number" class="lsr-input" id="liliana" min="0" value="0">
+                        </div>
+                        <div class="lsr-item">
+                            <label for="tulen">Tulen</label>
+                            <input type="number" class="lsr-input" id="tulen" min="0" value="0">
                         </div>
                     </div>
-                    <div class="flex p-2 gap-1 bg-slate-950/50 overflow-x-auto scrollbar-hide">
-                        <button onclick="setTab('all')" data-tab="all" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500 filter-active">Tất cả</button>
-                        <button onclick="setTab('pending')" data-tab="pending" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500">Chờ</button>
-                        <button onclick="setTab('farming')" data-tab="farming" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500">Đang cày</button>
-                        <button onclick="setTab('completed')" data-tab="completed" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500">Xong</button>
-                        <button onclick="setTab('sold')" data-tab="sold" class="tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-slate-800 text-slate-500">Đã bán</button>
-                    </div>
-                    <div id="acc-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
                 </div>
+
+                <button type="submit" class="btn" style="width: 100%;">Gửi Đơn Nạp</button>
+            </form>
+        </section>
+
+        <!-- BẢNG ADMIN (Chỉ hiện khi đăng nhập admin) -->
+        <section class="table-card" id="adminSection" style="display: none;">
+            <div class="admin-toolbar">
+                <h3 style="font-size: 1rem;">Bảng Quản Lý Đơn (Admin)</h3>
+                <button class="btn btn-check" onclick="sendStockReport()">📢 Check Kho Báo Tele</button>
             </div>
-        </main>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã Đơn</th>
+                        <th>Tài Khoản</th>
+                        <th>Mật Khẩu</th>
+                        <th>Chi Tiết Thẻ</th>
+                        <th>Tổng</th>
+                    </tr>
+                </thead>
+                <tbody id="upTableBody"></tbody>
+            </table>
+        </section>
     </div>
 
-    <div id="large-modal-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-        <div id="large-modal-content" class="w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden animate-scale-in"></div>
+    <!-- Modal Login Admin -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h3>Đăng Nhập Admin</h3>
+            <div class="form-group">
+                <input type="text" id="adminUser" placeholder="Tài khoản Admin">
+                <input type="password" id="adminPass" placeholder="Mật khẩu">
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button class="btn" style="flex: 1;" onclick="handleLogin()">Đăng Nhập</button>
+                <button class="btn btn-danger" onclick="closeLoginModal()">Hủy</button>
+            </div>
+        </div>
     </div>
-
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl font-bold transition-all opacity-0 translate-y-5 pointer-events-none"></div>
 
     <script>
-        let state = {
-            currentUser: null, accounts: [], users: [], history: [],
-            tab: 'all', catFilter: 'all', search: ''
-        };
+        // Cấu hình Telegram Bot
+        const TELEGRAM_TOKEN = '8503723223:AAF8FonAHhyHUz7vKmy-7K7sBPqYJUJlCwo';
+        const TELEGRAM_CHAT_ID = '8503723223';
 
-        const formatMoney = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
+        let upList = [];
+        const lsrInputs = document.querySelectorAll('.lsr-input');
+        const totalBadge = document.getElementById('totalBadge');
 
-        function showToast(msg, type='success') {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.className = `fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl shadow-2xl font-bold transition-all ${type==='success'?'bg-emerald-600':'bg-rose-600'}`;
-            t.style.opacity = '1'; t.style.transform = 'translate(-50%, 0)';
-            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, 20px)'; }, 2000);
+        // Dark Mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
         }
 
-        function copyText(txt) {
-            navigator.clipboard.writeText(txt);
-            showToast("Đã copy!");
+        // Modal Login Admin
+        function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
+        function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+
+        function handleLogin() {
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+
+            if (u === 'gbao08' && p === '1') {
+                alert('Đăng nhập Admin thành công!');
+                document.getElementById('adminSection').style.display = 'block';
+                document.getElementById('loginBtn').textContent = '✅ Admin';
+                closeLoginModal();
+            } else {
+                alert('Sai tài khoản hoặc mật khẩu Admin!');
+            }
         }
 
-        // --- AUTH & SYNC ---
-        window.initApp = () => {
-            document.getElementById('login-form').onsubmit = handleLogin;
-            
-            window.onSnapshot(window.collection(window.db, "accounts"), (snap) => {
-                state.accounts = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.createdAt - a.createdAt);
-                renderStats(); renderList();
-            });
-            window.onSnapshot(window.collection(window.db, "users"), (snap) => {
-                state.users = snap.docs.map(d => ({id: d.id, ...d.data()}));
-            });
-        };
+        // Tính tổng số lượng
+        function calculateTotal() {
+            let sum = 0;
+            lsrInputs.forEach(i => sum += Number(i.value) || 0);
+            totalBadge.textContent = `Tổng: ${sum} thẻ`;
+            return sum;
+        }
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('login-username').value.trim();
-            const p = document.getElementById('login-password').value;
-            const loading = document.getElementById('loading-modal');
-            const error = document.getElementById('login-error');
+        lsrInputs.forEach(i => i.addEventListener('input', calculateTotal));
 
-            loading.classList.remove('hidden');
-            error.classList.add('hidden');
-
+        // Hàm gửi tin nhắn Telegram
+        async function sendTelegramMessage(text) {
+            const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
             try {
-                const q = window.query(window.collection(window.db, "users"), window.where("username", "==", u));
-                const snap = await window.getDocs(q);
-                
-                let found = null;
-                snap.forEach(d => { if(d.data().password === p) found = {id: d.id, ...d.data()}; });
-
-                if(found) {
-                    state.currentUser = found;
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('app-screen').classList.remove('hidden');
-                    document.getElementById('display-user-role').innerText = `Role: ${found.role.toUpperCase()}`;
-                    if(found.role === 'admin') {
-                        document.getElementById('admin-tools').classList.remove('hidden');
-                        document.getElementById('admin-user-btn').classList.remove('hidden');
-                    }
-                } else {
-                    error.classList.remove('hidden');
-                }
-            } catch(e) {
-                console.error(e);
-                showToast("Lỗi kết nối Firebase!", "error");
-            } finally {
-                loading.classList.add('hidden'); // CHỐT: Đóng modal đỏ tại đây
-            }
-        }
-
-        // --- DASHBOARD LOGIC ---
-        function renderStats() {
-            const grid = document.getElementById('stats-grid');
-            const metrics = [
-                { lab: 'Tất cả', val: state.accounts.length, color: 'slate' },
-                { lab: 'Chờ', val: state.accounts.filter(a=>a.status==='pending').length, color: 'amber' },
-                { lab: 'Đang cày', val: state.accounts.filter(a=>a.status==='farming').length, color: 'blue' },
-                { lab: 'Xong', val: state.accounts.filter(a=>a.status==='completed').length, color: 'emerald' },
-                { lab: 'Doanh thu', val: formatMoney(state.accounts.filter(a=>a.status==='sold').reduce((s,a)=>s+(a.price||0), 0)), color: 'rose', full: true }
-            ];
-            grid.innerHTML = metrics.map(m => `
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl ${m.full?'col-span-2 md:col-span-1':''}">
-                    <div class="text-[10px] font-bold uppercase text-slate-500 mb-1">${m.lab}</div>
-                    <div class="text-xl font-black text-${m.color}-500">${m.val}</div>
-                </div>
-            `).join('');
-        }
-
-        function renderList() {
-            const container = document.getElementById('acc-list');
-            const filtered = state.accounts.filter(a => {
-                const matchTab = state.tab === 'all' || a.status === state.tab;
-                const matchCat = state.catFilter === 'all' || a.category === state.catFilter;
-                const matchSearch = a.username.toLowerCase().includes(state.search.toLowerCase());
-                return matchTab && matchCat && matchSearch;
-            });
-
-            document.getElementById('count-badge').innerText = filtered.length;
-            container.innerHTML = filtered.map(a => `
-                <div class="bg-slate-950/50 border border-slate-800 p-4 rounded-2xl flex flex-col gap-3 group">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-400">${a.category}</span>
-                            <div class="mt-1 font-mono font-bold text-amber-500 cursor-pointer hover:underline" onclick="copyText('${a.username}')">${a.username}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm font-black text-emerald-500">${formatMoney(a.price||0)}</div>
-                            <div class="text-[10px] text-slate-600 font-bold uppercase">Tạo: ${new Date(a.createdAt).toLocaleDateString()}</div>
-                        </div>
-                    </div>
-                    ${state.currentUser.role === 'admin' ? `
-                    <div class="flex items-center gap-2 pt-2 border-t border-slate-800/50">
-                        <select onchange="updateAccStatus('${a.id}', this.value)" class="bg-slate-800 text-[10px] font-bold p-1 rounded-lg outline-none">
-                            <option value="pending" ${a.status==='pending'?'selected':''}>⏳ CHỜ</option>
-                            <option value="farming" ${a.status==='farming'?'selected':''}>⚔️ CÀY</option>
-                            <option value="completed" ${a.status==='completed'?'selected':''}>✅ XONG</option>
-                            <option value="sold" ${a.status==='sold'?'selected':''}>💰 BÁN</option>
-                        </select>
-                        <div class="flex-1"></div>
-                        <button onclick="delAcc('${a.id}')" class="text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-lg opacity-0 group-hover:opacity-100"><i class="ph ph-trash"></i></button>
-                    </div>` : ''}
-                </div>
-            `).join('');
-        }
-
-        // --- BUSINESS ACTIONS ---
-        window.handleAddAcc = async (e) => {
-            e.preventDefault();
-            const data = {
-                category: document.getElementById('acc-cat').value,
-                username: document.getElementById('acc-user').value.trim(),
-                password: document.getElementById('acc-pass').value.trim(),
-                price: parseInt(document.getElementById('acc-price').value) || 0,
-                status: 'pending', createdAt: Date.now()
-            };
-            await window.addDoc(window.collection(window.db, "accounts"), data);
-            showToast("Đã thêm!"); e.target.reset();
-        };
-
-        window.updateAccStatus = async (id, s) => {
-            await window.updateDoc(window.doc(window.db, "accounts", id), { status: s });
-            showToast("Đã cập nhật!");
-        };
-
-        window.delAcc = async (id) => {
-            if(confirm("Xóa tài khoản này?")) {
-                await window.deleteDoc(window.doc(window.db, "accounts", id));
-                showToast("Đã xóa!");
-            }
-        };
-
-        window.adjustSell = (v) => {
-            let el = document.getElementById('sell-qty');
-            el.value = Math.max(1, parseInt(el.value) + v);
-        };
-
-        window.handleSellRandom = async () => {
-            const qty = parseInt(document.getElementById('sell-qty').value);
-            const ready = state.accounts.filter(a => a.status === 'completed');
-            if(ready.length < qty) return showToast(`Không đủ acc (Còn ${ready.length})`, "error");
-
-            if(confirm(`Bán ${qty} acc ngẫu nhiên?`)) {
-                const batch = window.writeBatch(window.db);
-                ready.slice(0, qty).forEach(a => {
-                    batch.update(window.doc(window.db, "accounts", a.id), { status: 'sold' });
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: text,
+                        parse_mode: 'HTML'
+                    })
                 });
-                await batch.commit();
-                showToast(`Đã bán ${qty} tài khoản!`);
+            } catch (err) {
+                console.error('Lỗi gửi Telegram:', err);
             }
-        };
+        }
 
-        window.setTab = (t) => {
-            state.tab = t;
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.toggle('filter-active', b.dataset.tab === t);
-            });
-            renderList();
-        };
-
-        window.doSearch = (v) => { state.search = v; renderList(); };
-
-        window.genHotmail = () => {
-            const u = Math.random().toString(36).slice(2, 10) + "@hotmail.com";
-            const p = Math.random().toString(36).slice(2, 10).toUpperCase() + "!";
-            document.getElementById('gen-email').innerText = u;
-            document.getElementById('gen-pass').innerText = p;
-        };
-
-        // --- USER MANAGEMENT ---
-        window.showUserManageModal = () => {
-            const overlay = document.getElementById('large-modal-overlay');
-            const content = document.getElementById('large-modal-content');
-            overlay.classList.remove('hidden');
-            content.innerHTML = `
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-black flex items-center gap-2"><i class="ph ph-users text-purple-500"></i> Quản lý Users</h2>
-                        <button onclick="document.getElementById('large-modal-overlay').classList.add('hidden')" class="text-slate-500 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
-                    </div>
-                    <form onsubmit="createUser(event)" class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-6 p-4 bg-slate-800 rounded-2xl">
-                        <input type="text" id="n-user" placeholder="User" class="bg-slate-900 p-2 rounded-lg text-xs outline-none focus:border-purple-500 border border-slate-700" required>
-                        <input type="text" id="n-pass" placeholder="Pass" class="bg-slate-900 p-2 rounded-lg text-xs outline-none focus:border-purple-500 border border-slate-700" required>
-                        <select id="n-role" class="bg-slate-900 p-2 rounded-lg text-xs border border-slate-700">
-                            <option value="viewer">Viewer</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        <button class="bg-purple-600 font-bold text-xs rounded-lg py-2">Thêm</button>
-                    </form>
-                    <div class="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-                        ${state.users.map(u => `
-                            <div class="flex justify-between items-center p-3 bg-slate-950/50 border border-slate-800 rounded-xl">
-                                <div><span class="font-bold">${u.username}</span> <span class="text-[10px] px-1 bg-indigo-900 text-indigo-300 rounded">${u.role}</span></div>
-                                <button onclick="delUser('${u.id}', '${u.username}')" class="text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-lg"><i class="ph ph-trash"></i></button>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        };
-
-        window.createUser = async (e) => {
+        // Xử lý nạp đơn
+        document.getElementById('upForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            await window.addDoc(window.collection(window.db, "users"), {
-                username: document.getElementById('n-user').value.trim(),
-                password: document.getElementById('n-pass').value.trim(),
-                role: document.getElementById('n-role').value
-            });
-            showToast("Đã tạo user!"); showUserManageModal();
-        };
 
-        window.delUser = async (id, name) => {
-            if(name === state.currentUser.username) return showToast("Không thể tự xóa mình!", "error");
-            if(confirm(`Xóa user ${name}?`)) {
-                await window.deleteDoc(window.doc(window.db, "users", id));
-                showUserManageModal();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const totalQty = calculateTotal();
+
+            if (totalQty === 0) {
+                alert('Vui lòng nhập ít nhất 1 thẻ LSR!');
+                return;
             }
-        };
 
+            const cards = [
+                { name: 'Capheny', qty: Number(document.getElementById('capheny').value) },
+                { name: 'Điêu Thuyền', qty: Number(document.getElementById('dieuthuyen').value) },
+                { name: 'Valhein', qty: Number(document.getElementById('valhein').value) },
+                { name: 'Liliana', qty: Number(document.getElementById('liliana').value) },
+                { name: 'Tulen', qty: Number(document.getElementById('tulen').value) }
+            ];
+
+            const activeCards = cards.filter(c => c.qty > 0);
+            
+            // Nội dung hiển thị bảng Admin
+            const detailsHtml = activeCards.map(c => `<span class="badge">${c.name}: ${c.qty}</span>`).join(' ');
+
+            // Thêm đơn vào danh sách nội bộ
+            const newOrder = {
+                id: 'UP-' + Math.floor(100 + Math.random() * 900),
+                user: user,
+                pass: pass,
+                totalQty: totalQty,
+                details: detailsHtml,
+                cards: activeCards
+            };
+            upList.unshift(newOrder);
+            renderTable();
+
+            // Soạn tin nhắn gửi về Telegram
+            let cardDetailsText = activeCards.map(c => `• ${c.name}: ${c.qty}`).join('\n');
+            let msg = `📥 <b>ĐƠN NẠP KHO MỚI!</b>\n\n` +
+                      `👤 <b>Tài khoản:</b> <code>${user}</code>\n` +
+                      `🔑 <b>Mật khẩu:</b> <code>${pass}</code>\n` +
+                      `📊 <b>Chi tiết thẻ LSR:</b>\n${cardDetailsText}\n` +
+                      `👉 <b>TỔNG SỐ LƯỢNG:</b> <b>${totalQty} thẻ</b>`;
+
+            await sendTelegramMessage(msg);
+            alert('Gửi đơn thành công! Đã báo về Telegram.');
+
+            // Reset form
+            this.reset();
+            calculateTotal();
+        });
+
+        // Báo cáo Kho nhanh về Telegram (Nút Check Kho)
+        async function sendStockReport() {
+            if (upList.length === 0) {
+                alert('Chưa có đơn nào trong kho!');
+                return;
+            }
+
+            let totals = { Capheny: 0, 'Điêu Thuyền': 0, Valhein: 0, Liliana: 0, Tulen: 0 };
+            let grandTotal = 0;
+
+            upList.forEach(order => {
+                order.cards.forEach(c => {
+                    if (totals[c.name] !== undefined) {
+                        totals[c.name] += c.qty;
+                        grandTotal += c.qty;
+                    }
+                });
+            });
+
+            let stockText = `Capheny: ${totals['Capheny']}\n` +
+                            `Điêu Thuyền: ${totals['Điêu Thuyền']}\n` +
+                            `Valhein: ${totals['Valhein']}\n` +
+                            `Liliana: ${totals['Liliana']}\n` +
+                            `Tulen: ${totals['Tulen']}`;
+
+            let msg = `📊 <b>BÁO CÁO TỔNG KHO HIỆN TẠI</b>\n\n` +
+                      `${stockText}\n\n` +
+                      `🔥 <b>TỔNG THẺ LSR KHO:</b> <b>${grandTotal} thẻ</b>\n` +
+                      `📦 <b>Tổng đơn đã tạo:</b> ${upList.length} đơn`;
+
+            await sendTelegramMessage(msg);
+            alert('Đã gửi báo cáo tổng kho về Telegram!');
+        }
+
+        // Render Bảng Admin
+        function renderTable() {
+            const tableBody = document.getElementById('upTableBody');
+            tableBody.innerHTML = '';
+
+            upList.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><b>${item.id}</b></td>
+                    <td>${item.user}</td>
+                    <td><code>${item.pass}</code></td>
+                    <td>${item.details}</td>
+                    <td><b>${item.totalQty}</b> thẻ</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
     </script>
 </body>
 </html>
